@@ -1,8 +1,8 @@
 import SwiftUI
 
 @main
-struct DayLogApplication: App {
-    @StateObject private var viewModel = DayLogViewModel()
+struct DayleafApplication: App {
+    @StateObject private var viewModel = DayleafViewModel()
 
     var body: some Scene {
         MenuBarExtra("一日一笺", systemImage: viewModel.menuSystemImage) {

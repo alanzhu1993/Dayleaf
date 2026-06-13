@@ -1,14 +1,14 @@
-import DayLogCore
+import DayleafCore
 import Foundation
 
 @main
-struct DayLogCoreCheck {
+struct DayleafCoreCheck {
     static func main() throws {
         try checkFocusDurationExcludesPausedIntervals()
         try checkEntriesAreFilteredAndSorted()
         try checkMarkdownExportUsesConfiguredDirectory()
         try checkJSONStoreRoundTrip()
-        print("DayLogCoreCheck passed")
+        print("DayleafCoreCheck passed")
     }
 
     private static func checkFocusDurationExcludesPausedIntervals() throws {
@@ -33,7 +33,7 @@ struct DayLogCoreCheck {
 
     private static func checkEntriesAreFilteredAndSorted() throws {
         let targetDay = date("2026-06-13T12:00:00Z")
-        let database = DayLogDatabase(
+        let database = DayleafDatabase(
             focusSessions: [
                 FocusSession(
                     actualActivity: "Focus later",
@@ -71,7 +71,7 @@ struct DayLogCoreCheck {
         }
 
         let exportedAt = date("2026-06-13T12:00:00Z")
-        let database = DayLogDatabase(
+        let database = DayleafDatabase(
             focusSessions: [
                 FocusSession(
                     plannedActivity: "Write proposal",
@@ -92,7 +92,7 @@ struct DayLogCoreCheck {
         let result = try exporter.export(
             date: exportedAt,
             database: database,
-            settings: DayLogSettings(exportDirectoryPath: temporaryDirectory.path),
+            settings: DayleafSettings(exportDirectoryPath: temporaryDirectory.path),
             exportedAt: exportedAt
         )
 
@@ -116,8 +116,8 @@ struct DayLogCoreCheck {
             try? FileManager.default.removeItem(at: temporaryDirectory)
         }
 
-        let store = JSONDayLogStore(directoryURL: temporaryDirectory)
-        let database = DayLogDatabase(
+        let store = JSONDayleafStore(directoryURL: temporaryDirectory)
+        let database = DayleafDatabase(
             focusSessions: [
                 FocusSession(
                     actualActivity: "Completed focus",
@@ -130,7 +130,7 @@ struct DayLogCoreCheck {
                 QuickNote(content: "Quick thought", occurredAt: date("2026-06-13T10:00:00Z"))
             ]
         )
-        let settings = DayLogSettings(exportDirectoryPath: temporaryDirectory.path)
+        let settings = DayleafSettings(exportDirectoryPath: temporaryDirectory.path)
 
         try store.saveDatabase(database)
         try store.saveSettings(settings)

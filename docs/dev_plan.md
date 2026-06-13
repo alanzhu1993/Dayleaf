@@ -13,9 +13,9 @@
 
 ## 3. Stack and Architecture
 
-- `DayLogCore`：数据模型、JSON 存储、Markdown 导出。
-- `DayLogApp`：SwiftUI 菜单栏界面和设置。
-- `DayLogCoreTests`：核心逻辑测试。
+- `DayleafCore`：数据模型、JSON 存储、Markdown 导出。
+- `DayleafApp`：SwiftUI 菜单栏界面和设置。
+- `DayleafCoreTests`：核心逻辑测试。
 
 ## 4. External Dependencies
 
@@ -42,8 +42,8 @@
 
 #### Files / Modules
 
-- `Sources/DayLogCore`
-- `Tests/DayLogCoreTests`
+- `Sources/DayleafCore`
+- `Tests/DayleafCoreTests`
 
 #### Acceptance Criteria
 
@@ -54,7 +54,7 @@
 #### Test Plan
 
 - `swift build`
-- `swift run DayLogCoreCheck`
+- `swift run DayleafCoreCheck`
 
 #### Risks
 
@@ -84,7 +84,7 @@
 
 #### Files / Modules
 
-- `Sources/DayLogApp`
+- `Sources/DayleafApp`
 
 #### Acceptance Criteria
 
@@ -95,7 +95,7 @@
 #### Test Plan
 
 - `swift build`
-- 手动运行 `swift run DayLog`
+- 手动运行 `swift run Dayleaf`
 
 #### Risks
 
@@ -114,15 +114,15 @@
 
 - dependency check: Swift toolchain exists.
 - typecheck/build: `swift build`
-- automated checks: `swift run DayLogCoreCheck`
+- automated checks: `swift run DayleafCoreCheck`
 - unit tests: `swift test` 当前 Command Line Tools 环境没有可用 XCTest，暂不可用。
 - lint: 当前无 SwiftLint，记录为 unavailable。
-- manual smoke test: `swift run DayLog`。
+- manual smoke test: `swift run Dayleaf`。
 - independent review: 更新 `docs/review_report.md`。
 
 ## 8. Rollback Strategy
 
-Swift Package 新增文件相对独立。如原型不可用，可保留 `DayLogCore` 和测试，移除或替换 `DayLogApp`。
+Swift Package 新增文件相对独立。如原型不可用，可保留 `DayleafCore` 和测试，移除或替换 `DayleafApp`。
 
 ## 9. Open Questions
 
@@ -132,6 +132,6 @@ Swift Package 新增文件相对独立。如原型不可用，可保留 `DayLogC
 ## 10. Change Log
 
 - 2026-06-13: Created V1 development plan.
-- 2026-06-13: Updated verification gates to use `DayLogCoreCheck` because XCTest is unavailable in the current Command Line Tools environment.
+- 2026-06-13: Updated verification gates to use `DayleafCoreCheck` because XCTest is unavailable in the current Command Line Tools environment.
 - 2026-06-13: Removed prototype notification scope after UI smoke feedback showed the Swift Package app can crash when ending a focus session.
 - 2026-06-13: Updated export requirements for 一日一笺 Chinese Markdown and warm friend-style AI prompt.

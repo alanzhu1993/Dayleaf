@@ -16,7 +16,7 @@ public struct MarkdownExporter: Sendable {
         self.timeZone = timeZone
     }
 
-    public func markdown(for date: Date, database: DayLogDatabase, exportedAt: Date = Date()) -> String {
+    public func markdown(for date: Date, database: DayleafDatabase, exportedAt: Date = Date()) -> String {
         let entries = database.entries(on: date, calendar: calendar)
         let focusSessions = entries.compactMap { entry -> FocusSession? in
             if case .focusSession(let session) = entry { return session }
@@ -68,8 +68,8 @@ public struct MarkdownExporter: Sendable {
 
     public func export(
         date: Date,
-        database: DayLogDatabase,
-        settings: DayLogSettings,
+        database: DayleafDatabase,
+        settings: DayleafSettings,
         exportedAt: Date = Date(),
         fileManager: FileManager = .default
     ) throws -> MarkdownExportResult {

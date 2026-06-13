@@ -1,6 +1,6 @@
 import Foundation
 
-public struct DayLogSettings: Codable, Equatable, Sendable {
+public struct DayleafSettings: Codable, Equatable, Sendable {
     public var exportDirectoryPath: String?
 
     public init(exportDirectoryPath: String? = nil) {

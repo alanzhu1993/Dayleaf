@@ -1,9 +1,9 @@
 import AppKit
-import DayLogCore
+import DayleafCore
 import SwiftUI
 
 struct MenuBarRootView: View {
-    @EnvironmentObject private var viewModel: DayLogViewModel
+    @EnvironmentObject private var viewModel: DayleafViewModel
     @FocusState private var focusedField: FocusedField?
 
     var body: some View {

@@ -255,7 +255,7 @@ V1 完成必须满足：
 - V1 不内置 AI。
 - V1 用正计时专注，不做倒计时番茄循环。
 - Swift Package 原型优先，正式发布包后续处理。
-- 产品对外中文名为“一日一笺”，但内部 Swift Package 和 target 名称暂时保留 DayLog。
+- 产品对外中文名为“一日一笺”，但内部 Swift Package 和 target 名称暂时保留 Dayleaf。
 
 ## 14. Change Log
 

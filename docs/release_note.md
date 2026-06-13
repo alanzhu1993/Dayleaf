@@ -13,7 +13,7 @@ This is an **early preview**. The app is **unsigned and not notarized** — macO
 ## Packaging
 
 - `scripts/package_app.sh` builds a release binary, generates `AppIcon.icns` from `Assets/AppIconSource.png`, assembles `dist/Dayleaf.app`, and produces `dist/Dayleaf.dmg`.
-- Bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `CFBundleExecutable=DayLog`, `CFBundleIconFile=AppIcon`, `LSUIElement=true` (menu bar tool, no Dock icon).
+- Bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `CFBundleExecutable=Dayleaf`, `CFBundleIconFile=AppIcon`, `LSUIElement=true` (menu bar tool, no Dock icon).
 - No code signing and no notarization in this stage.
 - Release attaches `Dayleaf.dmg` only (no zip).
 
@@ -50,21 +50,21 @@ This is an **early preview**. The app is **unsigned and not notarized** — macO
 - No global shortcut.
 - No system notification.
 - Timeline editing changes entry text only; start/end time and duration are not editable yet.
-- `swift test` is not used in the current local environment; use `DayLogCoreCheck`.
+- `swift test` is not used in the current local environment; use `DayleafCoreCheck`.
 
 ## How to Run
 
 ```bash
 git clone https://github.com/alanzhu1993/Dayleaf.git
 cd Dayleaf
-swift run DayLog
+swift run Dayleaf
 ```
 
 ## How to Verify
 
 ```bash
 swift build
-swift run DayLogCoreCheck
+swift run DayleafCoreCheck
 ```
 
 ## Next Steps

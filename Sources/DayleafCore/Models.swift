@@ -162,7 +162,7 @@ public enum DayEntry: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
-public struct DayLogDatabase: Codable, Equatable, Sendable {
+public struct DayleafDatabase: Codable, Equatable, Sendable {
     public var focusSessions: [FocusSession]
     public var quickNotes: [QuickNote]
 

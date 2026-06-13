@@ -50,22 +50,22 @@ Latest local verification:
 
 ```bash
 swift build
-swift run DayLogCoreCheck
+swift run DayleafCoreCheck
 ```
 
 Results:
 
 - `swift build`: passed.
-- `swift run DayLogCoreCheck`: passed.
+- `swift run DayleafCoreCheck`: passed.
 
-`swift test` is not used in the current local Command Line Tools environment because XCTest is unavailable. `DayLogCoreCheck` is used as the executable verification suite.
+`swift test` is not used in the current local Command Line Tools environment because XCTest is unavailable. `DayleafCoreCheck` is used as the executable verification suite.
 
 ## 5. Manual Acceptance Path
 
 Run:
 
 ```bash
-swift run DayLog
+swift run Dayleaf
 ```
 
 Manual checks:
@@ -102,7 +102,7 @@ Packaging is done by `scripts/package_app.sh` on a local macOS machine with Xcod
 
 - `swift build -c release` produces the release binary;
 - `sips` + `iconutil` generate `AppIcon.icns` from `Assets/AppIconSource.png`;
-- a hand-assembled `dist/Dayleaf.app` bundle is created with `Info.plist` (`com.alanzhu.dayleaf`, `Dayleaf`, `DayLog`, `AppIcon`, `LSUIElement=true`);
+- a hand-assembled `dist/Dayleaf.app` bundle is created with `Info.plist` (`com.alanzhu.dayleaf`, `Dayleaf`, `Dayleaf`, `AppIcon`, `LSUIElement=true`);
 - `hdiutil` produces `dist/Dayleaf.dmg` (with an `/Applications` symlink for drag-install).
 
 Current stage is **unsigned, not notarized**. A later phase still requires:

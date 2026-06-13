@@ -3,24 +3,24 @@
 import PackageDescription
 
 let package = Package(
-    name: "DayLog",
+    name: "Dayleaf",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .library(name: "DayLogCore", targets: ["DayLogCore"]),
-        .executable(name: "DayLog", targets: ["DayLogApp"]),
-        .executable(name: "DayLogCoreCheck", targets: ["DayLogCoreCheck"])
+        .library(name: "DayleafCore", targets: ["DayleafCore"]),
+        .executable(name: "Dayleaf", targets: ["DayleafApp"]),
+        .executable(name: "DayleafCoreCheck", targets: ["DayleafCoreCheck"])
     ],
     targets: [
-        .target(name: "DayLogCore"),
+        .target(name: "DayleafCore"),
         .executableTarget(
-            name: "DayLogApp",
-            dependencies: ["DayLogCore"]
+            name: "DayleafApp",
+            dependencies: ["DayleafCore"]
         ),
         .executableTarget(
-            name: "DayLogCoreCheck",
-            dependencies: ["DayLogCore"]
+            name: "DayleafCoreCheck",
+            dependencies: ["DayleafCore"]
         )
     ]
 )

@@ -5,15 +5,15 @@
 ### Added
 
 - Created a Swift Package foundation for the 一日一笺 macOS prototype.
-- Added `DayLogCore` with local data models for focus sessions, pause intervals, quick notes, settings, and mixed day entries.
+- Added `DayleafCore` with local data models for focus sessions, pause intervals, quick notes, settings, and mixed day entries.
 - Added JSON persistence for records and settings.
 - Added Markdown export with summary, timeline, timestamps, durations, and AI prompt support.
 - Added configurable export directory behavior with a default Documents folder.
-- Added `DayLogApp` SwiftUI menu bar prototype.
+- Added `DayleafApp` SwiftUI menu bar prototype.
 - Added focus controls: start, pause, resume, finish.
 - Added quick note input for continuous "碎碎念" capture.
 - Added export directory picker using the macOS folder panel.
-- Added `DayLogCoreCheck`, a no-dependency executable verification suite for the current non-XCTest environment.
+- Added `DayleafCoreCheck`, a no-dependency executable verification suite for the current non-XCTest environment.
 - Added `.gitignore` for SwiftPM build output and macOS metadata.
 
 ### Changed
@@ -25,8 +25,8 @@
 ### Verification
 
 - `swift build`: passed.
-- `swift run DayLogCoreCheck`: passed.
-- `swift test`: unavailable because the current Command Line Tools environment has no XCTest test target support; replaced by `DayLogCoreCheck`.
+- `swift run DayleafCoreCheck`: passed.
+- `swift test`: unavailable because the current Command Line Tools environment has no XCTest test target support; replaced by `DayleafCoreCheck`.
 
 ### Known Issues
 
@@ -53,5 +53,33 @@
 ### Verification
 
 - `swift build`: passed.
-- `swift run DayLogCoreCheck`: passed.
-- `swift run DayLog`: launched successfully for smoke testing and was then stopped manually.
+- `swift run DayleafCoreCheck`: passed.
+- `swift run Dayleaf`: launched successfully for smoke testing and was then stopped manually.
+
+## 2026-06-13 App Preview
+
+### Added
+
+- Added `scripts/package_app.sh` to build an unsigned `dist/Dayleaf.app` and `dist/Dayleaf.dmg` locally (swift build + sips/iconutil for the icon + hdiutil for the dmg). No code signing or notarization at this stage.
+- Added `Assets/AppIconSource.png` as the app icon source, generated into `AppIcon.icns` during packaging.
+- Added bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `LSUIElement=true` (menu bar tool, no Dock icon).
+- Added a Quit action at the bottom of the menu bar popover (⌘Q), since the app has no Dock icon to quit from.
+- Added edit-text and delete actions for saved timeline entries via a per-row "⋯" menu, with inline editing and a delete confirmation. In-progress focus sessions are not editable or deletable.
+
+### Changed
+
+- Renamed all internal `DayLog` naming to `Dayleaf`: Swift package name, products (`Dayleaf`, `DayleafCore`, `DayleafCoreCheck`), targets (`DayleafApp`, `DayleafCore`, `DayleafCoreCheck`), source folders, and type names (`DayleafApplication`, `DayleafViewModel`, `DayleafDatabase`, `DayleafSettings`, `JSONDayleafStore`). Run commands are now `swift run Dayleaf` / `swift run DayleafCoreCheck`. The user-facing Chinese name `一日一笺` is unchanged.
+- Updated README, `docs/release_note.md`, `docs/release_audit.md`, and CI workflow to reflect the unsigned `.dmg` preview, the rename, and the new edit/delete and quit features.
+- Added `dist/` to `.gitignore`.
+
+### Verification
+
+- `swift build`: passed.
+- `swift run DayleafCoreCheck`: passed.
+- `swift run Dayleaf`: launched, smoke-tested (quit button, timeline edit/delete), then stopped.
+- `./scripts/package_app.sh`: produced `dist/Dayleaf.app` and `dist/Dayleaf.dmg`.
+
+### Known Issues
+
+- The `.app` / `.dmg` is unsigned and not notarized; macOS Gatekeeper warns on first open (right-click → Open to bypass).
+- Timeline editing changes entry text only; start/end time and duration are not editable yet.

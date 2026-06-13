@@ -1,24 +1,24 @@
 import AppKit
-import DayLogCore
+import DayleafCore
 import Foundation
 import SwiftUI
 
 @MainActor
-final class DayLogViewModel: ObservableObject {
-    @Published private(set) var database = DayLogDatabase()
-    @Published private(set) var settings = DayLogSettings()
+final class DayleafViewModel: ObservableObject {
+    @Published private(set) var database = DayleafDatabase()
+    @Published private(set) var settings = DayleafSettings()
     @Published var plannedActivityDraft = ""
     @Published var quickNoteDraft = ""
     @Published var finishActivityDraft = ""
     @Published var statusMessage: String?
     @Published var now = Date()
 
-    private let store: JSONDayLogStore
+    private let store: JSONDayleafStore
     private let exporter: MarkdownExporter
     private var timer: Timer?
 
     init(
-        store: JSONDayLogStore = .live(),
+        store: JSONDayleafStore = .live(),
         exporter: MarkdownExporter = MarkdownExporter()
     ) {
         self.store = store
@@ -290,14 +290,14 @@ final class DayLogViewModel: ObservableObject {
         }
     }
 
-    private func mutateDatabase(_ mutation: (inout DayLogDatabase) -> Void) {
+    private func mutateDatabase(_ mutation: (inout DayleafDatabase) -> Void) {
         var nextDatabase = database
         mutation(&nextDatabase)
         database = nextDatabase
         saveDatabase()
     }
 
-    private func databaseWithRefreshedActiveDuration() -> DayLogDatabase {
+    private func databaseWithRefreshedActiveDuration() -> DayleafDatabase {
         var copy = database
         if let index = copy.focusSessions.firstIndex(where: { $0.endedAt == nil }) {
             copy.focusSessions[index].refreshActiveDuration(now: now)

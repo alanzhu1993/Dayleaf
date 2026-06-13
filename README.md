@@ -72,7 +72,7 @@ swift-driver version: 1.148.6 Apple Swift version 6.3.1
 ```bash
 git clone https://github.com/alanzhu1993/Dayleaf.git
 cd Dayleaf
-swift run DayLog
+swift run Dayleaf
 ```
 
 After launch, look for `一日一笺` in the macOS menu bar.
@@ -87,10 +87,10 @@ Control + C
 
 ```bash
 swift build
-swift run DayLogCoreCheck
+swift run DayleafCoreCheck
 ```
 
-`DayLogCoreCheck` validates the core logic, including:
+`DayleafCoreCheck` validates the core logic, including:
 
 - focus duration excluding pause time;
 - day filtering and timeline ordering;
@@ -143,7 +143,7 @@ Dayleaf is local-first.
 - No system notification yet.
 - Editing a timeline entry changes its text only; start/end time and duration cannot be edited yet.
 - Current UI smoke tests are manual.
-- `swift test` is not used because this local Command Line Tools environment does not expose XCTest; `DayLogCoreCheck` is used instead.
+- `swift test` is not used because this local Command Line Tools environment does not expose XCTest; `DayleafCoreCheck` is used instead.
 
 ## Roadmap
 

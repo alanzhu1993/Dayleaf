@@ -46,12 +46,12 @@ Codex self-review.
 ## Test Coverage
 
 - Pass / Fail / Partial: Partial.
-- Notes: `DayLogCoreCheck` covers duration calculation, day filtering, mixed sorting, Markdown export, configured export directory, and JSON round trip. `swift test` is unavailable because XCTest is not present in the current Command Line Tools environment.
+- Notes: `DayleafCoreCheck` covers duration calculation, day filtering, mixed sorting, Markdown export, configured export directory, and JSON round trip. `swift test` is unavailable because XCTest is not present in the current Command Line Tools environment.
 
 ## Build / Runtime
 
 - Pass / Fail: Pass.
-- Notes: `swift build` passes. `swift run DayLogCoreCheck` passes. `swift run DayLog` was launched for a smoke test and did not crash on startup.
+- Notes: `swift build` passes. `swift run DayleafCoreCheck` passes. `swift run Dayleaf` was launched for a smoke test and did not crash on startup.
 
 ## Risks
 

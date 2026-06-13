@@ -1,6 +1,6 @@
 import Foundation
 
-public final class JSONDayLogStore {
+public final class JSONDayleafStore {
     private let directoryURL: URL
     private let databaseURL: URL
     private let settingsURL: URL
@@ -24,38 +24,38 @@ public final class JSONDayLogStore {
         self.decoder = decoder
     }
 
-    public static func live(fileManager: FileManager = .default) -> JSONDayLogStore {
+    public static func live(fileManager: FileManager = .default) -> JSONDayleafStore {
         let appSupportURL = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? fileManager.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support", isDirectory: true)
-        return JSONDayLogStore(
-            directoryURL: appSupportURL.appendingPathComponent("DayLog", isDirectory: true),
+        return JSONDayleafStore(
+            directoryURL: appSupportURL.appendingPathComponent("Dayleaf", isDirectory: true),
             fileManager: fileManager
         )
     }
 
-    public func loadDatabase() throws -> DayLogDatabase {
+    public func loadDatabase() throws -> DayleafDatabase {
         guard fileManager.fileExists(atPath: databaseURL.path) else {
-            return DayLogDatabase()
+            return DayleafDatabase()
         }
         let data = try Data(contentsOf: databaseURL)
-        return try decoder.decode(DayLogDatabase.self, from: data)
+        return try decoder.decode(DayleafDatabase.self, from: data)
     }
 
-    public func saveDatabase(_ database: DayLogDatabase) throws {
+    public func saveDatabase(_ database: DayleafDatabase) throws {
         try ensureDirectoryExists()
         let data = try encoder.encode(database)
         try data.write(to: databaseURL, options: [.atomic])
     }
 
-    public func loadSettings() throws -> DayLogSettings {
+    public func loadSettings() throws -> DayleafSettings {
         guard fileManager.fileExists(atPath: settingsURL.path) else {
-            return DayLogSettings()
+            return DayleafSettings()
         }
         let data = try Data(contentsOf: settingsURL)
-        return try decoder.decode(DayLogSettings.self, from: data)
+        return try decoder.decode(DayleafSettings.self, from: data)
     }
 
-    public func saveSettings(_ settings: DayLogSettings) throws {
+    public func saveSettings(_ settings: DayleafSettings) throws {
         try ensureDirectoryExists()
         let data = try encoder.encode(settings)
         try data.write(to: settingsURL, options: [.atomic])

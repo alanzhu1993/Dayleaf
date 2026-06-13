@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @EnvironmentObject private var viewModel: DayLogViewModel
+    @EnvironmentObject private var viewModel: DayleafViewModel
 
     var body: some View {
         Form {

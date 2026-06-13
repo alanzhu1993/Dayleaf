@@ -22,4 +22,4 @@ jobs:
         run: swift build
 
       - name: Verify core behavior
-        run: swift run DayLogCoreCheck
+        run: swift run DayleafCoreCheck

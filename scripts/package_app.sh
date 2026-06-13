@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# package_app.sh — 把 Dayleaf Swift Package 打包成未签名的 Dayleaf.app + Dayleaf.dmg
+# package_app.sh — 把一日一笺打包成未公证的应用和磁盘镜像
 #
 # 仅在 macOS 本地运行（需要 swift / sips / iconutil / hdiutil）。
 # 产物输出到 dist/，不签名、不公证，仅用于早期下载测试。
@@ -12,9 +12,9 @@
 set -euo pipefail
 
 # ---- 基本配置 ----------------------------------------------------------------
-APP_NAME="Dayleaf"                 # 用户可见的 App 名
-DISPLAY_NAME="Dayleaf"             # CFBundleDisplayName
-EXEC_NAME="Dayleaf"                 # Swift executable / product 名，与 Package.swift 一致
+APP_NAME="一日一笺"                 # 用户可见的应用名
+DISPLAY_NAME="一日一笺"             # 应用显示名
+EXEC_NAME="Dayleaf"                 # 内部可执行文件名，与 Package.swift 一致
 BUNDLE_ID="com.alanzhu.dayleaf"
 MIN_MACOS="26.0"
 

@@ -1,6 +1,6 @@
-# Dayleaf / 一日一笺
+# 一日一笺
 
-Dayleaf（中文名：一日一笺）是一款本地优先的 macOS 菜单栏记录工具。
+一日一笺是一款本地优先的苹果电脑菜单栏记录工具。
 
 隐私为先，你的每一天都值得被看见。
 
@@ -9,67 +9,67 @@ Dayleaf（中文名：一日一笺）是一款本地优先的 macOS 菜单栏记
 - 专注记录：开始、暂停、继续、结束一段专注，并记录实际做了什么。
 - 快速记录：随手记下灵感、碎碎念和临时想法。
 
-一天结束后，Dayleaf 可以导出中文 Markdown 文件，包含时间线、专注时长和一段温暖型 AI 回顾提示。你可以把这份 Markdown 交给任意 AI 工具，让它像朋友一样帮你回看这一天。
+一天结束后，一日一笺可以导出中文标记文本，包含时间线、专注时长和一段温暖型回顾提示。你可以把这份文件交给任意人工智能工具，让它像朋友一样帮你回看这一天。
 
-## Current Status
+## 当前状态
 
-This repository is a **Swift Package prototype** that can now be packaged into a double-clickable macOS `.app` and a `.dmg` for early download testing.
+这是一个早期预览版本。当前仓库可以打包出可双击运行的 `.app`，也可以生成用于下载测试的 `.dmg`。
 
-The `.dmg` is **unsigned and not notarized**. macOS may warn that the developer cannot be verified. See [Download App](#download-app) for how to open it.
+这个 `.dmg` 已做本地临时签名，但还没有开发者签名和公证。系统首次打开时可能提示无法验证开发者，请按下面的方式打开。
 
-## Download App
+## 下载使用
 
-1. Download `Dayleaf.dmg` from the GitHub Releases page.
-2. Open the `.dmg` and drag `Dayleaf.app` into `Applications`.
-3. First launch: **right-click `Dayleaf.app` → Open**, then confirm. (Double-clicking may be blocked because the app is unsigned.)
-   - Alternatively: System Settings → Privacy & Security → "Open Anyway".
-4. After launch, look for `一日一笺` in the menu bar. Dayleaf runs as a menu bar tool and does not show a Dock icon.
+1. 从发布页面下载 `一日一笺.dmg`。
+2. 打开 `.dmg`，把 `一日一笺.app` 拖到“应用程序”。
+3. 第一次启动：右键点击 `一日一笺.app`，选择“打开”，然后确认。
+   - 也可以到“系统设置”里的“隐私与安全性”中选择“仍要打开”。
+4. 启动后，在菜单栏里找到“一日一笺”。它是菜单栏工具，不会显示在程序坞里。
 
-## Build DMG Locally
+## 本地打包
 
-Requires macOS with Xcode / Command Line Tools (`swift`, `sips`, `iconutil`, `hdiutil`).
+需要苹果电脑，并安装命令行开发工具。脚本会用到 `swift`、`sips`、`iconutil`、`hdiutil`。
 
 ```bash
 ./scripts/package_app.sh
 ```
 
-Outputs:
+输出文件：
 
-- `dist/Dayleaf.app`
-- `dist/Dayleaf.dmg`
+- `dist/一日一笺.app`
+- `dist/一日一笺.dmg`
 
-The script builds a release binary, generates `AppIcon.icns` from `Assets/AppIconSource.png`, assembles the `.app` bundle, and produces the `.dmg`. It does **not** sign or notarize. To use a different icon: `./scripts/package_app.sh /path/to/icon.png`. `dist/` is gitignored and only used for local builds and Release uploads.
+脚本会构建发布版本、根据 `Assets/AppIconSource.png` 生成应用图标、组装 `.app`，并生成 `.dmg`。当前只做本地临时签名，不做开发者签名和公证。`dist/` 已加入忽略列表，只用于本地构建和上传发布附件。
 
-## Features
+## 功能
 
-- macOS menu bar interface.
-- Start, pause, resume, and finish focus sessions.
-- Quick note capture with Return/Enter submission.
-- Today timeline preview, newest entries first.
-- Edit text or delete any saved timeline entry (with delete confirmation).
-- Quit from inside the menu (⌘Q), since it runs as a menu bar tool with no Dock icon.
-- Local JSON persistence.
-- Configurable Markdown export directory.
-- Chinese Markdown export:
+- 菜单栏入口。
+- 开始、暂停、继续、结束专注记录。
+- 快速记录，回车即可保存。
+- 今日时间线预览，最新记录在前。
+- 已保存记录可修改文字或删除。
+- 菜单内可退出应用。
+- 本地 JSON 数据持久化。
+- 可配置标记文本导出目录。
+- 中文标记文本导出：
   - `概览`
   - `时间线`
-  - `给 AI 的提示`
-- No cloud sync.
-- No AI API key.
-- No automatic upload.
+  - `给人工智能的提示`
+- 不做云同步。
+- 不需要人工智能密钥。
+- 不自动上传任何记录。
 
-## Requirements
+## 系统要求
 
-- macOS 26.0+
-- Swift 6.0+ toolchain
+- 苹果电脑系统 26.0 或更高版本。
+- Swift 6.0 或更高版本。
 
-The current prototype has been verified locally with:
+本地验证使用的工具链：
 
 ```bash
 swift-driver version: 1.148.6 Apple Swift version 6.3.1
 ```
 
-## Run From Source
+## 从源码运行
 
 ```bash
 git clone https://github.com/alanzhu1993/Dayleaf.git
@@ -77,44 +77,44 @@ cd Dayleaf
 swift run Dayleaf
 ```
 
-After launch, look for `一日一笺` in the macOS menu bar.
+启动后，在菜单栏里找到“一日一笺”。
 
-To stop the prototype, return to the terminal and press:
+停止源码运行版本时，回到终端按：
 
 ```bash
 Control + C
 ```
 
-## Verify
+## 验证
 
 ```bash
 swift build
 swift run DayleafCoreCheck
 ```
 
-`DayleafCoreCheck` validates the core logic, including:
+`DayleafCoreCheck` 会验证核心逻辑，包括：
 
-- focus duration excluding pause time;
-- day filtering and timeline ordering;
-- configurable export directory;
-- Chinese Markdown export;
-- JSON persistence round trip.
+- 专注时长计算，暂停时间不计入；
+- 按日期筛选和时间线排序；
+- 可配置导出目录；
+- 中文标记文本导出；
+- JSON 保存和读取。
 
-## Exported Markdown
+## 导出的标记文本
 
-The default export directory is:
+默认导出目录：
 
 ```text
 ~/Documents/一日一笺/
 ```
 
-Exported files use this format:
+导出文件名格式：
 
 ```text
 YYYY-MM-DD-一日一笺.md
 ```
 
-Example sections:
+示例结构：
 
 ```markdown
 # 2026-06-13 一日一笺
@@ -123,36 +123,36 @@ Example sections:
 
 ## 时间线
 
-## 给 AI 的提示
+## 给人工智能的提示
 ```
 
-The AI prompt is intentionally warm and reflective. It asks AI to respond like a sincere friend, not like a hard productivity dashboard.
+文件末尾的提示语是温暖、回顾型的，不是冷冰冰的效率分析。它会引导人工智能像真诚的朋友一样回应你这一天。
 
-## Data and Privacy
+## 数据与隐私
 
-Dayleaf is local-first.
+一日一笺坚持本地优先。
 
-- Records are stored locally as JSON.
-- Markdown files are exported only to the directory you choose.
-- The app does not upload records.
-- The app does not call AI services.
-- The app does not collect screen, keyboard, browser, or app usage history.
+- 记录只保存在本机 JSON 数据文件里。
+- 标记文本只导出到你选择的目录。
+- 应用不会上传记录。
+- 应用不会调用人工智能服务。
+- 应用不会收集屏幕、键盘、浏览器或其他应用使用记录。
 
-## Known Limitations
+## 已知限制
 
-- The `.app` / `.dmg` is unsigned and not notarized; macOS Gatekeeper will warn on first open.
-- No global shortcut yet.
-- No system notification yet.
-- Editing a timeline entry changes its text only; start/end time and duration cannot be edited yet.
-- Current UI smoke tests are manual.
-- `swift test` is not used because this local Command Line Tools environment does not expose XCTest; `DayleafCoreCheck` is used instead.
+- `.app` 和 `.dmg` 已做本地临时签名，但没有开发者签名和公证；系统首次打开时仍会提示无法验证开发者。
+- 暂无全局快捷键。
+- 暂无系统通知。
+- 时间线编辑目前只能修改文字，不能修改开始时间、结束时间和时长。
+- 当前界面冒烟测试主要靠手动验证。
+- 当前本地命令行开发工具环境没有可用 XCTest，所以不使用 `swift test`；核心检查用 `DayleafCoreCheck` 代替。
 
-## Roadmap
+## 后续计划
 
-- Sign and notarize the app (Apple Developer account) so it opens without the Gatekeeper warning.
-- Add global shortcut configuration.
-- Add edit/delete actions for saved entries.
+- 做开发者签名和公证，让应用首次打开更顺。
+- 增加全局快捷键配置。
+- 继续推进人工智能日记整理和长期画像方向。
 
-## License
+## 许可证
 
-MIT License. See [LICENSE](LICENSE).
+MIT。详见 [LICENSE](LICENSE)。

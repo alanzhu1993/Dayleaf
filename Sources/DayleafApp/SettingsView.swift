@@ -23,7 +23,7 @@ struct SettingsView: View {
             } header: {
                 Text("导出")
             } footer: {
-                Text("每天的记录会导出为 Markdown，保存到此目录。")
+                Text("每天的记录会导出为标记文本，保存到此目录。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

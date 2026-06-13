@@ -1,54 +1,54 @@
-# Release Note
+# 发布说明
 
-## Version
+## 版本
 
 v0.3
 
-## Summary
+## 概要
 
-Dayleaf / 一日一笺 0.3 focuses on a more polished, daily-use menu bar experience: a redesigned popover, light/dark themes, inline settings, privacy-forward About copy, toast feedback, and a better multiline quick note editor.
+一日一笺 0.3 主要优化日常使用体验：重新整理菜单栏弹窗、增加浅色和深色主题、加入弹窗内设置、补充隐私说明、增加操作提示，并改进快速记录输入框。
 
-This is still an **early preview**. The app is ad-hoc signed but **not notarized** — macOS may report that the developer cannot be verified. If it will not open, right-click the app and choose **Open**.
+这仍然是早期预览版。应用已做本地临时签名，但还没有开发者签名和公证。系统首次打开时可能提示无法验证开发者；如无法直接打开，请右键点击应用并选择“打开”。
 
-## Packaging
+## 打包说明
 
-- `scripts/package_app.sh` builds a release binary, generates `AppIcon.icns` from `Assets/AppIconSource.png`, assembles `dist/Dayleaf.app`, and produces `dist/Dayleaf.dmg`.
-- Bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `CFBundleExecutable=Dayleaf`, `CFBundleIconFile=AppIcon`, `LSUIElement=true` (menu bar tool, no Dock icon).
-- Ad-hoc signing is applied locally to avoid the "damaged app" path on Apple Silicon.
-- No Apple Developer ID signing and no notarization in this stage.
-- Release attaches `Dayleaf.dmg` only (no zip).
+- `scripts/package_app.sh` 会构建发布版本，生成 `AppIcon.icns`，组装 `dist/一日一笺.app`，并生成 `dist/一日一笺.dmg`。
+- 应用包信息包含：`CFBundleIdentifier=com.alanzhu.dayleaf`、`CFBundleDisplayName=一日一笺`、`CFBundleExecutable=Dayleaf`、`CFBundleIconFile=AppIcon`、`LSUIElement=true`。
+- 本地打包时会做临时签名，避免苹果芯片电脑上出现“应用已损坏”的错误。
+- 当前没有开发者签名，也没有公证。
+- 发布附件只上传 `一日一笺.dmg`。
 
-## New Features
+## 新增
 
-- Shared design system for the menu bar app: palette, layout tokens, tiles, fields, and button styles.
-- Light/dark theme selection.
-- In-popover settings for theme and export directory.
-- About panel with version and local-first privacy messaging.
-- Toast feedback for common actions.
-- Multiline quick note editor: Return saves, Shift+Return inserts a new line.
-- Future AI feature plan and data-chain diagram in `docs/`.
+- 增加菜单栏应用的统一视觉系统：颜色、间距、内容块、输入框和按钮样式。
+- 增加浅色和深色主题。
+- 增加弹窗内设置，可配置主题和导出目录。
+- 增加“关于”面板，显示版本和本地优先的隐私说明。
+- 增加操作提示，用于导出、专注、记录、修改和删除等动作。
+- 增加多行快速记录输入框：回车保存，Shift + 回车换行。
+- 增加未来人工智能功能方向文档和数据链路图。
 
-## Improvements
+## 改进
 
-- Refined the popover visual hierarchy, spacing, timeline rows, empty state, and footer.
-- Moved export directory controls into settings.
-- README now states: “隐私为先，你的每一天都值得被看见。”
-- App/package version defaults now use `0.3`.
+- 优化弹窗层级、间距、时间线行、空状态和底部操作区。
+- 将导出目录设置从主界面底部移入设置面板。
+- README 增加一句：“隐私为先，你的每一天都值得被看见。”
+- 应用版本默认值更新为 `0.3`。
 
-## Fixes
+## 修复
 
-- Reduced long export-path noise in action feedback by showing concise toast text.
+- 导出成功后的提示不再显示过长路径，只显示简短状态。
 
-## Known Limitations
+## 已知限制
 
-- Requires macOS 26.0+ in this build.
-- `.app` / `.dmg` is ad-hoc signed but not notarized; Gatekeeper warns on first open.
-- No global shortcut.
-- No system notification.
-- Timeline editing changes entry text only; start/end time and duration are not editable yet.
-- `swift test` is not used in the current local environment; use `DayleafCoreCheck`.
+- 当前构建需要苹果电脑系统 26.0 或更高版本。
+- `.app` 和 `.dmg` 已做本地临时签名，但没有开发者签名和公证；系统首次打开时仍会提示无法验证开发者。
+- 暂无全局快捷键。
+- 暂无系统通知。
+- 时间线编辑目前只能修改文字，不能修改开始时间、结束时间和时长。
+- 当前本地环境不使用 `swift test`，核心检查使用 `DayleafCoreCheck`。
 
-## How to Run
+## 运行源码
 
 ```bash
 git clone https://github.com/alanzhu1993/Dayleaf.git
@@ -56,15 +56,15 @@ cd Dayleaf
 swift run Dayleaf
 ```
 
-## How to Verify
+## 本地验证
 
 ```bash
 swift build
 swift run DayleafCoreCheck
 ```
 
-## Next Steps
+## 下一步
 
-- Sign and notarize the app with an Apple Developer account.
-- Add global shortcut configuration.
-- Continue the AI diary/long-term memory direction documented in `docs/ai_feature_plan.md`.
+- 做开发者签名和公证。
+- 增加全局快捷键配置。
+- 继续推进人工智能日记整理和长期画像方向。

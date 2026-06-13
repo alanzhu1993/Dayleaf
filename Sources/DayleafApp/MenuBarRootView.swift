@@ -86,7 +86,7 @@ struct MenuBarRootView: View {
                 Image(systemName: "square.and.arrow.up")
             }
             .buttonStyle(IconButtonStyle())
-            .help("导出今天为 Markdown")
+            .help("导出今天为标记文本")
             .accessibilityLabel("导出今天")
         }
     }
@@ -371,7 +371,7 @@ private struct SettingsPanel: View {
                     Label("选择目录…", systemImage: "folder")
                 }
                 .buttonStyle(NeutralButtonStyle())
-                Text("每天的记录会导出为 Markdown，保存到此目录。")
+                Text("每天的记录会导出为标记文本，保存到此目录。")
                     .font(.caption2)
                     .foregroundStyle(Palette.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)

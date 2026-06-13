@@ -1,111 +1,111 @@
-# Change Log
+# 变更日志
 
 ## 2026-06-14 v0.3
 
-### Added
+### 新增
 
-- Added a shared SwiftUI design system for the menu bar app, including theme-aware palette, reusable tile/field styling, and primary/secondary/icon button styles.
-- Added light/dark theme selection backed by `@AppStorage`.
-- Added an in-popover settings panel for theme and export directory management.
-- Added an About panel with version display and local-first privacy messaging.
-- Added toast feedback for export, focus, note, edit, and delete actions.
-- Added `QuickNoteEditor`, an AppKit-backed multiline quick note input where Return saves and Shift+Return inserts a new line.
-- Added `docs/ai_feature_plan.md` and `docs/ai_data_chain.svg` to record the future AI diary/long-term memory direction.
+- 增加菜单栏应用的统一视觉系统，包括主题色、间距、内容块、输入框和按钮样式。
+- 增加浅色和深色主题，并用 `@AppStorage` 保存主题选择。
+- 增加弹窗内设置面板，可管理主题和导出目录。
+- 增加“关于”面板，显示版本和本地优先的隐私说明。
+- 增加操作提示，用于导出、专注、记录、修改和删除等动作。
+- 增加 `QuickNoteEditor`，支持多行快速记录：回车保存，Shift + 回车换行。
+- 增加 `docs/ai_feature_plan.md` 和 `docs/ai_data_chain.svg`，记录后续人工智能日记整理和长期画像方向。
 
-### Changed
+### 变更
 
-- Refined the menu bar popover layout, timeline rows, empty state, footer, and focus session card for a more polished daily-use UI.
-- Moved export directory controls from the main footer into settings.
-- Changed the Swift Package platform declaration to macOS 26.0.
-- Updated app/package version defaults to `0.3`.
-- Updated README intro with: “隐私为先，你的每一天都值得被看见。”
+- 优化菜单栏弹窗布局、时间线行、空状态、底部操作区和专注卡片。
+- 将导出目录设置从主界面底部移入设置面板。
+- 将 Swift Package 的系统要求调整为苹果电脑系统 26.0。
+- 应用版本默认值更新为 `0.3`。
+- README 增加一句：“隐私为先，你的每一天都值得被看见。”
 
-### Verification
+### 验证
 
-- `swift build`: passed.
-- `swift run DayleafCoreCheck`: passed.
-- `./scripts/package_app.sh`: produced ad-hoc signed `dist/Dayleaf.app` and `dist/Dayleaf.dmg`.
+- `swift build`：通过。
+- `swift run DayleafCoreCheck`：通过。
+- `./scripts/package_app.sh`：已生成本地临时签名的 `dist/一日一笺.app` 和 `dist/一日一笺.dmg`。
 
-## 2026-06-13
+## 2026-06-13 初始版本
 
-### Added
+### 新增
 
-- Created a Swift Package foundation for the 一日一笺 macOS prototype.
-- Added `DayleafCore` with local data models for focus sessions, pause intervals, quick notes, settings, and mixed day entries.
-- Added JSON persistence for records and settings.
-- Added Markdown export with summary, timeline, timestamps, durations, and AI prompt support.
-- Added configurable export directory behavior with a default Documents folder.
-- Added `DayleafApp` SwiftUI menu bar prototype.
-- Added focus controls: start, pause, resume, finish.
-- Added quick note input for continuous "碎碎念" capture.
-- Added export directory picker using the macOS folder panel.
-- Added `DayleafCoreCheck`, a no-dependency executable verification suite for the current non-XCTest environment.
-- Added `.gitignore` for SwiftPM build output and macOS metadata.
+- 创建一日一笺苹果电脑菜单栏原型的 Swift Package 基础工程。
+- 增加 `DayleafCore`，包含专注记录、暂停区间、快速记录、设置和混合时间线数据模型。
+- 增加 JSON 本地持久化。
+- 增加标记文本导出，包含概览、时间线、时间戳、时长和给人工智能的提示。
+- 增加可配置导出目录，默认目录为 `~/Documents/一日一笺/`。
+- 增加 `DayleafApp` 菜单栏界面原型。
+- 增加专注控制：开始、暂停、继续、结束。
+- 增加快速记录输入。
+- 增加导出目录选择。
+- 增加 `DayleafCoreCheck`，作为当前无 XCTest 环境下的核心验证程序。
+- 增加 `.gitignore`，忽略 SwiftPM 构建产物和系统元数据。
 
-### Changed
+### 变更
 
-- Revised `docs/product_spec.md` for focus sessions, quick notes, configurable export directory, and AI-ready Markdown.
-- Added `docs/design_brief.md`.
-- Added `docs/dev_plan.md`.
+- 更新产品规格文档，覆盖专注记录、快速记录、可配置导出目录和人工智能友好的标记文本。
+- 增加设计说明文档。
+- 增加开发计划文档。
 
-### Verification
+### 验证
 
-- `swift build`: passed.
-- `swift run DayleafCoreCheck`: passed.
-- `swift test`: unavailable because the current Command Line Tools environment has no XCTest test target support; replaced by `DayleafCoreCheck`.
+- `swift build`：通过。
+- `swift run DayleafCoreCheck`：通过。
+- `swift test`：当前命令行开发工具环境没有可用 XCTest 测试目标，改用 `DayleafCoreCheck`。
 
-### Known Issues
+### 已知问题
 
-- The current prototype is a Swift Package executable, not a packaged `.app`.
-- Global shortcut configuration is documented as a later packaged-app feature.
-- System notification is disabled in the Swift Package prototype because it can be unstable without a packaged macOS app bundle.
+- 初始原型是 Swift Package 可执行程序，还不是完整打包应用。
+- 全局快捷键放到后续应用打包阶段处理。
+- 系统通知暂未启用，因为 Swift Package 原型中可能不稳定。
 
-## 2026-06-13 Fix
+## 2026-06-13 修复
 
-### Fixed
+### 修复
 
-- Fixed timeline refresh after adding focus sessions or quick notes by replacing the whole published database value after each mutation.
-- Fixed a crash path when ending focus by removing the prototype system notification call.
-- Improved the daily timeline preview so users can see focus sessions, quick notes, time ranges, timestamps, and duration without exporting Markdown.
-- Improved export directory selection by activating the app, foregrounding the folder panel, and opening from an existing directory.
-- Added Return/Enter submission for quick notes, starting focus, and finishing focus.
-- Changed the primary capture fields to single-line quick-submit inputs for V1.
-- Changed the daily timeline preview to show newest entries first while keeping export/core ordering unchanged.
-- Renamed the visible product surface to `一日一笺` while keeping Swift Package and executable names unchanged.
-- Changed Markdown export to Chinese headings, table labels, type labels, duration text, and file names.
-- Replaced the engineering-style AI prompt with a warm friend-style Chinese reflection prompt.
-- Changed the default export folder to `~/Documents/一日一笺/`.
+- 修复新增专注记录或快速记录后时间线不刷新的问题。
+- 移除原型里的系统通知调用，避免结束专注时出现崩溃路径。
+- 优化今日时间线预览，可直接看到专注记录、快速记录、时间范围、时间戳和时长。
+- 优化导出目录选择，让目录面板更稳定地前置显示。
+- 增加回车提交：快速记录、开始专注、结束专注都可用。
+- 将主要输入框改成单行快速提交形式。
+- 今日时间线预览改为最新记录在前；导出和核心排序保持不变。
+- 可见产品名统一为“一日一笺”，内部工程名保持不变。
+- 标记文本导出改为中文标题、表格标签、类型标签、时长文本和文件名。
+- 将人工智能提示改成温暖朋友式中文回顾提示。
+- 默认导出目录改为 `~/Documents/一日一笺/`。
 
-### Verification
+### 验证
 
-- `swift build`: passed.
-- `swift run DayleafCoreCheck`: passed.
-- `swift run Dayleaf`: launched successfully for smoke testing and was then stopped manually.
+- `swift build`：通过。
+- `swift run DayleafCoreCheck`：通过。
+- `swift run Dayleaf`：启动成功，完成基础冒烟测试后手动停止。
 
-## 2026-06-13 App Preview
+## 2026-06-13 应用预览版
 
-### Added
+### 新增
 
-- Added `scripts/package_app.sh` to build an unsigned `dist/Dayleaf.app` and `dist/Dayleaf.dmg` locally (swift build + sips/iconutil for the icon + hdiutil for the dmg). No code signing or notarization at this stage.
-- Added `Assets/AppIconSource.png` as the app icon source, generated into `AppIcon.icns` during packaging.
-- Added bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `LSUIElement=true` (menu bar tool, no Dock icon).
-- Added a Quit action at the bottom of the menu bar popover (⌘Q), since the app has no Dock icon to quit from.
-- Added edit-text and delete actions for saved timeline entries via a per-row "⋯" menu, with inline editing and a delete confirmation. In-progress focus sessions are not editable or deletable.
+- 增加 `scripts/package_app.sh`，可在本地构建未公证的 `dist/一日一笺.app` 和 `dist/一日一笺.dmg`。
+- 增加 `Assets/AppIconSource.png` 作为应用图标源，打包时生成 `AppIcon.icns`。
+- 增加应用包信息：`CFBundleIdentifier=com.alanzhu.dayleaf`、`CFBundleDisplayName=Dayleaf`、`LSUIElement=true`。
+- 增加菜单底部退出按钮，因为菜单栏工具没有程序坞图标。
+- 增加已保存时间线记录的修改和删除操作，删除前需要确认；进行中的专注记录不能修改或删除。
 
-### Changed
+### 变更
 
-- Renamed all internal `DayLog` naming to `Dayleaf`: Swift package name, products (`Dayleaf`, `DayleafCore`, `DayleafCoreCheck`), targets (`DayleafApp`, `DayleafCore`, `DayleafCoreCheck`), source folders, and type names (`DayleafApplication`, `DayleafViewModel`, `DayleafDatabase`, `DayleafSettings`, `JSONDayleafStore`). Run commands are now `swift run Dayleaf` / `swift run DayleafCoreCheck`. The user-facing Chinese name `一日一笺` is unchanged.
-- Updated README, `docs/release_note.md`, `docs/release_audit.md`, and CI workflow to reflect the unsigned `.dmg` preview, the rename, and the new edit/delete and quit features.
-- Added `dist/` to `.gitignore`.
+- 内部工程命名统一为 `Dayleaf`，用户可见中文名仍为“一日一笺”。
+- 更新 README、发布说明、发布检查文档，说明未公证 `.dmg`、改名、修改删除和退出功能。
+- 将 `dist/` 加入忽略列表。
 
-### Verification
+### 验证
 
-- `swift build`: passed.
-- `swift run DayleafCoreCheck`: passed.
-- `swift run Dayleaf`: launched, smoke-tested (quit button, timeline edit/delete), then stopped.
-- `./scripts/package_app.sh`: produced `dist/Dayleaf.app` and `dist/Dayleaf.dmg`.
+- `swift build`：通过。
+- `swift run DayleafCoreCheck`：通过。
+- `swift run Dayleaf`：启动并完成退出按钮、时间线修改删除的冒烟测试后停止。
+- `./scripts/package_app.sh`：生成 `dist/一日一笺.app` 和 `dist/一日一笺.dmg`。
 
-### Known Issues
+### 已知问题
 
-- The `.app` / `.dmg` is unsigned and not notarized; macOS Gatekeeper warns on first open (right-click → Open to bypass).
-- Timeline editing changes entry text only; start/end time and duration are not editable yet.
+- `.app` 和 `.dmg` 没有开发者签名和公证；系统首次打开时会提示无法验证开发者。
+- 时间线编辑目前只能修改文字，不能修改开始时间、结束时间和时长。

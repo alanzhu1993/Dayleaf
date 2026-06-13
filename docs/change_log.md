@@ -88,7 +88,7 @@
 
 - 增加 `scripts/package_app.sh`，可在本地构建未公证的 `dist/一日一笺.app` 和 `dist/一日一笺.dmg`。
 - 增加 `Assets/AppIconSource.png` 作为应用图标源，打包时生成 `AppIcon.icns`。
-- 增加应用包信息：`CFBundleIdentifier=com.alanzhu.dayleaf`、`CFBundleDisplayName=Dayleaf`、`LSUIElement=true`。
+- 增加应用包信息：`CFBundleIdentifier=com.alanzhu.dayleaf`、`CFBundleDisplayName=一日一笺`、`LSUIElement=true`。
 - 增加菜单底部退出按钮，因为菜单栏工具没有程序坞图标。
 - 增加已保存时间线记录的修改和删除操作，删除前需要确认；进行中的专注记录不能修改或删除。
 

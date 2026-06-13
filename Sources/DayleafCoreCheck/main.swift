@@ -105,7 +105,7 @@ struct DayleafCoreCheck {
         try expect(result.markdown.contains("| 09:10 | 2026-06-13T09:10:00Z | 专注 | 写客户方案 | 42分钟 |"), "markdown should include Chinese focus row")
         try expect(result.markdown.contains("| 10:03 | 2026-06-13T10:03:12Z | 记录 | 想到一个销售复盘角度 | - |"), "markdown should include Chinese note row")
         try expect(result.markdown.contains("2026-06-13T10:03:12Z"), "markdown should include precise timestamp")
-        try expect(result.markdown.contains("## 给人工智能的提示"), "markdown should include Chinese AI prompt section")
+        try expect(result.markdown.contains("## 给人工智能的提示"), "导出内容应包含中文人工智能提示章节")
         try expect(result.markdown.contains("像一位真诚、温和的朋友一样"), "markdown should include warm friend-style analysis prompt")
     }
 

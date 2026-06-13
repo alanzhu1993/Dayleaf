@@ -1,0 +1,65 @@
+<svg width="100%" viewBox="0 0 680 548" role="img" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, system-ui, sans-serif">
+<title>Dayleaf AI 数据链与边界结构图</title>
+<desc>从用户碎片记录，经 AI 整理日记、长期画像沉淀，到朋友式回应的四段数据链；右侧标注输出形态、不发散护栏与用户触发边界；底部为隐私底座与 LLM 调用层。</desc>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+<path d="M1,1 L7,4 L1,7" fill="none" stroke="#4a7c59" stroke-width="1.6"/>
+</marker>
+</defs>
+
+<text x="40" y="32" font-family="Georgia, 'Songti SC', serif" font-size="19" font-weight="700" fill="#1f2421">Dayleaf AI · 数据链与边界</text>
+
+<rect x="468" y="20" width="13" height="13" rx="3" fill="#eaf3ec" stroke="#4a7c59"/>
+<text x="486" y="31" font-size="11.5" fill="#5b6660">核心链路</text>
+<rect x="566" y="20" width="13" height="13" rx="3" fill="#f3f3f1" stroke="#c8ccc8"/>
+<text x="584" y="31" font-size="11.5" fill="#5b6660">规则 / 底座</text>
+
+<rect x="40" y="62" width="360" height="64" rx="12" fill="#eaf3ec" stroke="#4a7c59" stroke-width="1.5"/>
+<text x="58" y="90" font-family="Georgia, 'Songti SC', serif" font-size="16" font-weight="700" fill="#2f5d43">① 碎片记录</text>
+<text x="58" y="111" font-size="12.5" fill="#5b6660">用户主动写的「笺」· 本地存储</text>
+<text x="430" y="89" font-size="11.5" font-style="italic" fill="#7a8a82">← 用户自主记录</text>
+<text x="430" y="106" font-size="11.5" font-style="italic" fill="#7a8a82">不催 · 不 push</text>
+
+<line x1="220" y1="126" x2="220" y2="150" stroke="#4a7c59" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="232" y="143" font-size="12.5" fill="#5b6660">整理</text>
+
+<rect x="40" y="152" width="360" height="64" rx="12" fill="#eaf3ec" stroke="#4a7c59" stroke-width="1.5"/>
+<text x="58" y="180" font-family="Georgia, 'Songti SC', serif" font-size="16" font-weight="700" fill="#2f5d43">② AI 整理日记</text>
+<text x="58" y="201" font-size="12.5" fill="#5b6660">碎片 → 一篇结构清晰的日记</text>
+<line x1="400" y1="184" x2="428" y2="184" stroke="#4a7c59" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="430" y="152" width="230" height="64" rx="12" fill="#f3f3f1" stroke="#c8ccc8" stroke-width="1.3"/>
+<text x="446" y="180" font-size="14" font-weight="700" fill="#1f2421">结构化日记</text>
+<text x="446" y="201" font-size="12" fill="#5b6660">富文本 · PDF（不是 Markdown）</text>
+
+<line x1="220" y1="216" x2="220" y2="240" stroke="#4a7c59" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="232" y="233" font-size="12.5" fill="#5b6660">沉淀</text>
+
+<rect x="40" y="242" width="360" height="64" rx="12" fill="#eaf3ec" stroke="#4a7c59" stroke-width="1.5"/>
+<text x="58" y="270" font-family="Georgia, 'Songti SC', serif" font-size="16" font-weight="700" fill="#2f5d43">③ 长期画像</text>
+<text x="58" y="291" font-size="12.5" fill="#5b6660">持续更新的你：压力源 · 情绪模式</text>
+<line x1="400" y1="274" x2="428" y2="274" stroke="#c8ccc8" stroke-width="1.2" stroke-dasharray="3 3"/>
+<rect x="430" y="242" width="230" height="64" rx="12" fill="#f3f3f1" stroke="#c8ccc8" stroke-width="1.3"/>
+<text x="446" y="270" font-size="14" font-weight="700" fill="#1f2421">护栏</text>
+<text x="446" y="291" font-size="12" fill="#5b6660">观点可发散；你的事实必须有据</text>
+
+<line x1="220" y1="306" x2="220" y2="330" stroke="#4a7c59" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="232" y="323" font-size="12.5" fill="#5b6660">陪伴 = 当天记录 + 长期画像</text>
+
+<rect x="40" y="332" width="360" height="64" rx="12" fill="#eaf3ec" stroke="#4a7c59" stroke-width="1.5"/>
+<text x="58" y="360" font-family="Georgia, 'Songti SC', serif" font-size="16" font-weight="700" fill="#2f5d43">④ 朋友式回应</text>
+<text x="58" y="381" font-size="12.5" fill="#5b6660">读懂你、帮你排解，不是问答</text>
+<line x1="400" y1="364" x2="428" y2="364" stroke="#c8ccc8" stroke-width="1.2" stroke-dasharray="3 3"/>
+<rect x="430" y="332" width="230" height="64" rx="12" fill="#f3f3f1" stroke="#c8ccc8" stroke-width="1.3"/>
+<text x="446" y="360" font-size="14" font-weight="700" fill="#1f2421">触发权在用户</text>
+<text x="446" y="381" font-size="12" fill="#5b6660">记录完成 / 打开 app · 不打扰</text>
+
+<rect x="40" y="430" width="300" height="66" rx="12" fill="#f3f3f1" stroke="#c8ccc8" stroke-width="1.3"/>
+<text x="58" y="458" font-size="14" font-weight="700" fill="#1f2421">隐私底座</text>
+<text x="58" y="479" font-size="12" fill="#5b6660">全本地 · 自己的 key · Keychain</text>
+
+<rect x="360" y="430" width="300" height="66" rx="12" fill="#f3f3f1" stroke="#c8ccc8" stroke-width="1.3"/>
+<text x="378" y="458" font-size="14" font-weight="700" fill="#1f2421">LLM 调用层</text>
+<text x="378" y="479" font-size="12" fill="#5b6660">OpenAI 兼容接口（②③④ 共用）</text>
+
+<text x="40" y="524" font-size="11.5" font-style="italic" fill="#7a8a82">底座支撑全链路：所有 AI 调用都走用户自己的 key，数据不出本地。</text>
+</svg>

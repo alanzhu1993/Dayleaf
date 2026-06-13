@@ -5,18 +5,27 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("导出") {
-                Text("当前目录")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(viewModel.exportDirectoryDisplay)
-                    .textSelection(.enabled)
+            Section {
+                LabeledContent("当前目录") {
+                    Text(viewModel.exportDirectoryDisplay)
+                        .textSelection(.enabled)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                        .multilineTextAlignment(.trailing)
+                }
 
                 Button {
                     viewModel.chooseExportDirectory()
                 } label: {
                     Label("选择导出目录", systemImage: "folder")
                 }
+            } header: {
+                Text("导出")
+            } footer: {
+                Text("每天的记录会导出为 Markdown，保存到此目录。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("快捷键") {
@@ -25,7 +34,7 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(20)
-        .frame(width: 460)
+        .formStyle(.grouped)
+        .frame(width: 460, height: 320)
     }
 }

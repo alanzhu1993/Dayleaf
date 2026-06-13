@@ -2,51 +2,47 @@
 
 ## Version
 
-v0.1.0-app-preview
+v0.3
 
 ## Summary
 
-Dayleaf / 一日一笺 can now be packaged into a double-clickable macOS `.app` and distributed as `Dayleaf.dmg` for early download testing.
+Dayleaf / 一日一笺 0.3 focuses on a more polished, daily-use menu bar experience: a redesigned popover, light/dark themes, inline settings, privacy-forward About copy, toast feedback, and a better multiline quick note editor.
 
-This is an **early preview**. The app is **unsigned and not notarized** — macOS may report that the developer cannot be verified. If it will not open, right-click the app and choose **Open**.
+This is still an **early preview**. The app is ad-hoc signed but **not notarized** — macOS may report that the developer cannot be verified. If it will not open, right-click the app and choose **Open**.
 
 ## Packaging
 
 - `scripts/package_app.sh` builds a release binary, generates `AppIcon.icns` from `Assets/AppIconSource.png`, assembles `dist/Dayleaf.app`, and produces `dist/Dayleaf.dmg`.
 - Bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `CFBundleExecutable=Dayleaf`, `CFBundleIconFile=AppIcon`, `LSUIElement=true` (menu bar tool, no Dock icon).
-- No code signing and no notarization in this stage.
+- Ad-hoc signing is applied locally to avoid the "damaged app" path on Apple Silicon.
+- No Apple Developer ID signing and no notarization in this stage.
 - Release attaches `Dayleaf.dmg` only (no zip).
 
 ## New Features
 
-- Menu bar prototype for macOS.
-- Focus sessions with start, pause, resume, and finish.
-- Quick note capture.
-- Keyboard-first submission using Return/Enter.
-- Today timeline preview, newest entries first.
-- Edit text or delete any saved timeline entry, with delete confirmation.
-- Quit action inside the menu bar popover (⌘Q).
-- Local JSON persistence.
-- Configurable Markdown export directory.
-- Chinese Markdown export with warm friend-style AI prompt.
+- Shared design system for the menu bar app: palette, layout tokens, tiles, fields, and button styles.
+- Light/dark theme selection.
+- In-popover settings for theme and export directory.
+- About panel with version and local-first privacy messaging.
+- Toast feedback for common actions.
+- Multiline quick note editor: Return saves, Shift+Return inserts a new line.
+- Future AI feature plan and data-chain diagram in `docs/`.
 
 ## Improvements
 
-- Visible product name updated to `一日一笺`.
-- English product name chosen as `Dayleaf`.
-- Export file name changed to `YYYY-MM-DD-一日一笺.md`.
-- Default export folder changed to `~/Documents/一日一笺/`.
+- Refined the popover visual hierarchy, spacing, timeline rows, empty state, and footer.
+- Moved export directory controls into settings.
+- README now states: “隐私为先，你的每一天都值得被看见。”
+- App/package version defaults now use `0.3`.
 
 ## Fixes
 
-- Fixed timeline refresh after adding records.
-- Fixed crash path when ending focus by removing prototype system notification.
-- Improved folder picker behavior in the menu bar prototype.
-- Changed timeline preview to newest-first order.
+- Reduced long export-path noise in action feedback by showing concise toast text.
 
 ## Known Limitations
 
-- `.app` / `.dmg` is unsigned and not notarized; Gatekeeper warns on first open.
+- Requires macOS 26.0+ in this build.
+- `.app` / `.dmg` is ad-hoc signed but not notarized; Gatekeeper warns on first open.
 - No global shortcut.
 - No system notification.
 - Timeline editing changes entry text only; start/end time and duration are not editable yet.
@@ -71,5 +67,4 @@ swift run DayleafCoreCheck
 
 - Sign and notarize the app with an Apple Developer account.
 - Add global shortcut configuration.
-- Add edit/delete UI.
-- Publish `Dayleaf.dmg` in GitHub Releases (e.g. tag `v0.1.0-app-preview`).
+- Continue the AI diary/long-term memory direction documented in `docs/ai_feature_plan.md`.

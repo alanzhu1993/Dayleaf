@@ -1,5 +1,31 @@
 # Change Log
 
+## 2026-06-14 v0.3
+
+### Added
+
+- Added a shared SwiftUI design system for the menu bar app, including theme-aware palette, reusable tile/field styling, and primary/secondary/icon button styles.
+- Added light/dark theme selection backed by `@AppStorage`.
+- Added an in-popover settings panel for theme and export directory management.
+- Added an About panel with version display and local-first privacy messaging.
+- Added toast feedback for export, focus, note, edit, and delete actions.
+- Added `QuickNoteEditor`, an AppKit-backed multiline quick note input where Return saves and Shift+Return inserts a new line.
+- Added `docs/ai_feature_plan.md` and `docs/ai_data_chain.svg` to record the future AI diary/long-term memory direction.
+
+### Changed
+
+- Refined the menu bar popover layout, timeline rows, empty state, footer, and focus session card for a more polished daily-use UI.
+- Moved export directory controls from the main footer into settings.
+- Changed the Swift Package platform declaration to macOS 26.0.
+- Updated app/package version defaults to `0.3`.
+- Updated README intro with: “隐私为先，你的每一天都值得被看见。”
+
+### Verification
+
+- `swift build`: passed.
+- `swift run DayleafCoreCheck`: passed.
+- `./scripts/package_app.sh`: produced ad-hoc signed `dist/Dayleaf.app` and `dist/Dayleaf.dmg`.
+
 ## 2026-06-13
 
 ### Added

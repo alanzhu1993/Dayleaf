@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "Dayleaf",
     platforms: [
-        .macOS(.v14)
+        .macOS("26.0")
     ],
     products: [
         .library(name: "DayleafCore", targets: ["DayleafCore"]),

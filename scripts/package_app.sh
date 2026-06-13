@@ -16,7 +16,7 @@ APP_NAME="Dayleaf"                 # 用户可见的 App 名
 DISPLAY_NAME="Dayleaf"             # CFBundleDisplayName
 EXEC_NAME="Dayleaf"                 # Swift executable / product 名，与 Package.swift 一致
 BUNDLE_ID="com.alanzhu.dayleaf"
-MIN_MACOS="14.0"
+MIN_MACOS="26.0"
 
 # 仓库根目录（脚本在 scripts/ 下）
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -108,7 +108,7 @@ iconutil -c icns "$ICONSET" -o "$RES_DIR/AppIcon.icns"
 
 # ---- 4. 写 Info.plist --------------------------------------------------------
 echo "==> 写 Info.plist"
-SHORT_VERSION="${DAYLEAF_VERSION:-0.2.0}"
+SHORT_VERSION="${DAYLEAF_VERSION:-0.3}"
 BUILD_NUMBER="${DAYLEAF_BUILD:-1}"
 cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

@@ -2,6 +2,8 @@
 
 Dayleaf（中文名：一日一笺）是一款本地优先的 macOS 菜单栏记录工具。
 
+隐私为先，你的每一天都值得被看见。
+
 它用于快速记录一天中的两类内容：
 
 - 专注记录：开始、暂停、继续、结束一段专注，并记录实际做了什么。
@@ -58,7 +60,7 @@ The script builds a release binary, generates `AppIcon.icns` from `Assets/AppIco
 
 ## Requirements
 
-- macOS
+- macOS 26.0+
 - Swift 6.0+ toolchain
 
 The current prototype has been verified locally with:

@@ -11,11 +11,32 @@ Dayleaf（中文名：一日一笺）是一款本地优先的 macOS 菜单栏记
 
 ## Current Status
 
-This repository is currently a **Swift Package prototype**.
+This repository is a **Swift Package prototype** that can now be packaged into a double-clickable macOS `.app` and a `.dmg` for early download testing.
 
-It is not a packaged macOS `.app` yet. You cannot download a ready-to-use app from GitHub Releases at this stage.
+The `.dmg` is **unsigned and not notarized**. macOS may warn that the developer cannot be verified. See [Download App](#download-app) for how to open it.
 
-For now, Dayleaf is intended for developers or early testers who can run it from source.
+## Download App
+
+1. Download `Dayleaf.dmg` from the GitHub Releases page.
+2. Open the `.dmg` and drag `Dayleaf.app` into `Applications`.
+3. First launch: **right-click `Dayleaf.app` → Open**, then confirm. (Double-clicking may be blocked because the app is unsigned.)
+   - Alternatively: System Settings → Privacy & Security → "Open Anyway".
+4. After launch, look for `一日一笺` in the menu bar. Dayleaf runs as a menu bar tool and does not show a Dock icon.
+
+## Build DMG Locally
+
+Requires macOS with Xcode / Command Line Tools (`swift`, `sips`, `iconutil`, `hdiutil`).
+
+```bash
+./scripts/package_app.sh
+```
+
+Outputs:
+
+- `dist/Dayleaf.app`
+- `dist/Dayleaf.dmg`
+
+The script builds a release binary, generates `AppIcon.icns` from `Assets/AppIconSource.png`, assembles the `.app` bundle, and produces the `.dmg`. It does **not** sign or notarize. To use a different icon: `./scripts/package_app.sh /path/to/icon.png`. `dist/` is gitignored and only used for local builds and Release uploads.
 
 ## Features
 
@@ -23,6 +44,8 @@ For now, Dayleaf is intended for developers or early testers who can run it from
 - Start, pause, resume, and finish focus sessions.
 - Quick note capture with Return/Enter submission.
 - Today timeline preview, newest entries first.
+- Edit text or delete any saved timeline entry (with delete confirmation).
+- Quit from inside the menu (⌘Q), since it runs as a menu bar tool with no Dock icon.
 - Local JSON persistence.
 - Configurable Markdown export directory.
 - Chinese Markdown export:
@@ -115,21 +138,18 @@ Dayleaf is local-first.
 
 ## Known Limitations
 
-- Not packaged as a `.app` yet.
-- No GitHub Release binary yet.
+- The `.app` / `.dmg` is unsigned and not notarized; macOS Gatekeeper will warn on first open.
 - No global shortcut yet.
 - No system notification yet.
-- No edit/delete UI for historical entries yet.
+- Editing a timeline entry changes its text only; start/end time and duration cannot be edited yet.
 - Current UI smoke tests are manual.
 - `swift test` is not used because this local Command Line Tools environment does not expose XCTest; `DayLogCoreCheck` is used instead.
 
 ## Roadmap
 
-- Package as a standard macOS `.app`.
-- Add app icon and bundle metadata.
+- Sign and notarize the app (Apple Developer account) so it opens without the Gatekeeper warning.
 - Add global shortcut configuration.
 - Add edit/delete actions for saved entries.
-- Add GitHub Release artifact such as `Dayleaf.app.zip` or `.dmg`.
 
 ## License
 

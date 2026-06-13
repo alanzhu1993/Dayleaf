@@ -2,13 +2,20 @@
 
 ## Version
 
-v0.1.0-source-prototype
+v0.1.0-app-preview
 
 ## Summary
 
-Dayleaf / 一日一笺 is ready for an initial source prototype release on GitHub.
+Dayleaf / 一日一笺 can now be packaged into a double-clickable macOS `.app` and distributed as `Dayleaf.dmg` for early download testing.
 
-This version is intended for developers and early testers. It is not a packaged macOS `.app` yet.
+This is an **early preview**. The app is **unsigned and not notarized** — macOS may report that the developer cannot be verified. If it will not open, right-click the app and choose **Open**.
+
+## Packaging
+
+- `scripts/package_app.sh` builds a release binary, generates `AppIcon.icns` from `Assets/AppIconSource.png`, assembles `dist/Dayleaf.app`, and produces `dist/Dayleaf.dmg`.
+- Bundle metadata: `CFBundleIdentifier=com.alanzhu.dayleaf`, `CFBundleDisplayName=Dayleaf`, `CFBundleExecutable=DayLog`, `CFBundleIconFile=AppIcon`, `LSUIElement=true` (menu bar tool, no Dock icon).
+- No code signing and no notarization in this stage.
+- Release attaches `Dayleaf.dmg` only (no zip).
 
 ## New Features
 
@@ -17,6 +24,8 @@ This version is intended for developers and early testers. It is not a packaged 
 - Quick note capture.
 - Keyboard-first submission using Return/Enter.
 - Today timeline preview, newest entries first.
+- Edit text or delete any saved timeline entry, with delete confirmation.
+- Quit action inside the menu bar popover (⌘Q).
 - Local JSON persistence.
 - Configurable Markdown export directory.
 - Chinese Markdown export with warm friend-style AI prompt.
@@ -37,11 +46,10 @@ This version is intended for developers and early testers. It is not a packaged 
 
 ## Known Limitations
 
-- Not packaged as a `.app`.
-- No GitHub Release binary.
+- `.app` / `.dmg` is unsigned and not notarized; Gatekeeper warns on first open.
 - No global shortcut.
 - No system notification.
-- No edit/delete UI for saved entries.
+- Timeline editing changes entry text only; start/end time and duration are not editable yet.
 - `swift test` is not used in the current local environment; use `DayLogCoreCheck`.
 
 ## How to Run
@@ -61,8 +69,7 @@ swift run DayLogCoreCheck
 
 ## Next Steps
 
-- Package as a standard macOS `.app`.
-- Add app icon and bundle metadata.
+- Sign and notarize the app with an Apple Developer account.
 - Add global shortcut configuration.
 - Add edit/delete UI.
-- Publish `Dayleaf.app.zip` or `.dmg` in GitHub Releases.
+- Publish `Dayleaf.dmg` in GitHub Releases (e.g. tag `v0.1.0-app-preview`).

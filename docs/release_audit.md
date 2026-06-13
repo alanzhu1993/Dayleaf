@@ -2,13 +2,13 @@
 
 ## 1. Release Scope
 
-This release prepares Dayleaf / 一日一笺 for an initial GitHub source prototype release.
+This release prepares Dayleaf / 一日一笺 for an early app-preview release on GitHub.
 
 Release type:
 
-- Source prototype.
-- Not a packaged macOS `.app`.
-- Not a downloadable GitHub Release binary.
+- Packaged macOS `.app`, distributed as `Dayleaf.dmg`.
+- **Unsigned and not notarized.** This is NOT a formal, notarized App Store / Developer ID release.
+- macOS Gatekeeper will warn on first open; users may need to right-click → Open, or allow it in Privacy & Security.
 
 ## 2. Requirement Match
 
@@ -26,12 +26,16 @@ Implemented:
 - Chinese Markdown export.
 - Warm friend-style AI prompt.
 
+Implemented in this release:
+
+- Edit text / delete actions for saved timeline entries (with delete confirmation).
+- Quit action inside the menu bar popover (⌘Q).
+
 Not included in this release:
 
-- Packaged `.app`.
 - Global shortcut.
 - System notification.
-- Edit/delete actions for historical entries.
+- Editing start/end time or duration of a focus session (text-only editing for now).
 - Built-in AI analysis.
 
 ## 3. Design Match
@@ -79,8 +83,7 @@ Manual checks:
 
 ## 6. Known Issues
 
-- This is not a packaged `.app`.
-- Users must run from source with Swift.
+- The `.app` / `.dmg` is unsigned and not notarized; Gatekeeper warns on first open.
 - No global shortcut.
 - No system notification.
 - No edit/delete UI yet.
@@ -95,19 +98,23 @@ Manual checks:
 
 ## 8. Deployment / Packaging Notes
 
-GitHub source release is acceptable after README, LICENSE, release docs, and CI are present.
+Packaging is done by `scripts/package_app.sh` on a local macOS machine with Xcode / Command Line Tools:
 
-Packaged app release requires a later phase:
+- `swift build -c release` produces the release binary;
+- `sips` + `iconutil` generate `AppIcon.icns` from `Assets/AppIconSource.png`;
+- a hand-assembled `dist/Dayleaf.app` bundle is created with `Info.plist` (`com.alanzhu.dayleaf`, `Dayleaf`, `DayLog`, `AppIcon`, `LSUIElement=true`);
+- `hdiutil` produces `dist/Dayleaf.dmg` (with an `/Applications` symlink for drag-install).
 
-- install full Xcode;
-- create or migrate to a standard macOS app project;
-- configure bundle ID, app name, app icon, and permissions;
-- decide signed, notarized, or unsigned distribution;
-- produce `Dayleaf.app.zip` or `.dmg`;
-- attach artifact to GitHub Releases.
+Current stage is **unsigned, not notarized**. A later phase still requires:
+
+- Apple Developer ID signing (`codesign`);
+- notarization (`notarytool`) and stapling;
+- this would remove the Gatekeeper "unverified developer" warning.
+
+`dist/` is gitignored; artifacts are produced locally and uploaded to GitHub Releases.
 
 ## 9. Go / No-go Recommendation
 
-Go for initial GitHub source prototype release.
+Go for an early unsigned `.dmg` preview release (e.g. tag `v0.1.0-app-preview`), provided the release notes clearly state it is unsigned/unnotarized and explain the right-click → Open workaround.
 
-No-go for downloadable macOS app release until packaging is completed.
+No-go for a "verified developer" release until signing and notarization are completed.

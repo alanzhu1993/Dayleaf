@@ -1,3 +1,4 @@
+import AppKit
 import DayLogCore
 import SwiftUI
 
@@ -156,7 +157,12 @@ struct MenuBarRootView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         ForEach(viewModel.todayEntriesNewestFirst) { entry in
-                            TimelineRow(entry: entry, now: viewModel.now)
+                            TimelineRow(
+                                entry: entry,
+                                now: viewModel.now,
+                                onSave: { viewModel.updateEntryText(entry, to: $0) },
+                                onDelete: { viewModel.deleteEntry(entry) }
+                            )
                         }
                     }
                 }
@@ -189,6 +195,19 @@ struct MenuBarRootView: View {
                     .lineLimit(3)
                     .truncationMode(.middle)
             }
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button(role: .destructive) {
+                    NSApp.terminate(nil)
+                } label: {
+                    Text("退出")
+                }
+                .buttonStyle(.bordered)
+                .keyboardShortcut("q", modifiers: .command)
+            }
         }
     }
 }
@@ -202,6 +221,12 @@ private enum FocusedField: Hashable {
 private struct TimelineRow: View {
     let entry: DayEntry
     let now: Date
+    let onSave: (String) -> Void
+    let onDelete: () -> Void
+
+    @State private var isEditing = false
+    @State private var draft = ""
+    @State private var confirmingDelete = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -213,22 +238,117 @@ private struct TimelineRow: View {
                 Text(timeSummary)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
+                if canEdit {
+                    actionMenu
+                }
             }
-            Text(content)
-                .font(.callout)
-                .lineLimit(4)
-                .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let detail {
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+            if isEditing {
+                editor
+            } else {
+                Text(content)
+                    .font(.callout)
+                    .lineLimit(4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let detail {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+
+            if confirmingDelete {
+                deleteConfirm
             }
         }
         .padding(8)
         .background(.quaternary.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    // 进行中的专注不允许编辑/删除
+    private var canEdit: Bool {
+        if case .focusSession(let session) = entry {
+            return session.endedAt != nil
+        }
+        return true
+    }
+
+    private var editableText: String {
+        switch entry {
+        case .focusSession(let session):
+            return session.actualActivity
+        case .quickNote(let note):
+            return note.content
+        }
+    }
+
+    private var actionMenu: some View {
+        Menu {
+            Button {
+                draft = editableText
+                confirmingDelete = false
+                isEditing = true
+            } label: {
+                Label("编辑", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                isEditing = false
+                confirmingDelete = true
+            } label: {
+                Label("删除", systemImage: "trash")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+    }
+
+    private var editor: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            TextField("修改内容", text: $draft, axis: .vertical)
+                .textFieldStyle(.roundedBorder)
+                .lineLimit(1...4)
+                .onSubmit { commitEdit() }
+            HStack {
+                Spacer()
+                Button("取消") { isEditing = false }
+                    .buttonStyle(.bordered)
+                Button("保存") { commitEdit() }
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    private var deleteConfirm: some View {
+        HStack(spacing: 8) {
+            Text("确认删除这条记录？")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button("取消") { confirmingDelete = false }
+                .buttonStyle(.bordered)
+            Button(role: .destructive) {
+                confirmingDelete = false
+                onDelete()
+            } label: {
+                Text("删除")
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+
+    private func commitEdit() {
+        let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.isEmpty == false else { return }
+        isEditing = false
+        onSave(text)
     }
 
     private var typeTitle: String {

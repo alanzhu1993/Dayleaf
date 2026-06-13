@@ -162,6 +162,56 @@ final class DayLogViewModel: ObservableObject {
         return true
     }
 
+    @discardableResult
+    func updateEntryText(_ entry: DayEntry, to rawText: String) -> Bool {
+        let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.isEmpty == false else {
+            statusMessage = "内容不能为空。"
+            return false
+        }
+
+        switch entry {
+        case .focusSession(let session):
+            guard session.endedAt != nil else {
+                statusMessage = "进行中的专注不能编辑。"
+                return false
+            }
+            mutateDatabase { database in
+                if let index = database.focusSessions.firstIndex(where: { $0.id == session.id }) {
+                    database.focusSessions[index].actualActivity = text
+                    database.focusSessions[index].updatedAt = Date()
+                }
+            }
+        case .quickNote(let note):
+            mutateDatabase { database in
+                if let index = database.quickNotes.firstIndex(where: { $0.id == note.id }) {
+                    database.quickNotes[index].content = text
+                    database.quickNotes[index].updatedAt = Date()
+                }
+            }
+        }
+        statusMessage = "已更新一条记录。"
+        return true
+    }
+
+    func deleteEntry(_ entry: DayEntry) {
+        switch entry {
+        case .focusSession(let session):
+            guard session.endedAt != nil else {
+                statusMessage = "进行中的专注不能删除。"
+                return
+            }
+            mutateDatabase { database in
+                database.focusSessions.removeAll { $0.id == session.id }
+            }
+        case .quickNote(let note):
+            mutateDatabase { database in
+                database.quickNotes.removeAll { $0.id == note.id }
+            }
+        }
+        statusMessage = "已删除一条记录。"
+    }
+
     func exportToday() {
         do {
             let exportDatabase = databaseWithRefreshedActiveDuration()

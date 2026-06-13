@@ -146,6 +146,14 @@ PLIST
 # 校验 plist 合法性
 plutil -lint "$APP_DIR/Contents/Info.plist" >/dev/null
 
+# ---- 4.5 ad-hoc 签名 --------------------------------------------------------
+# Apple 芯片要求可执行文件至少有签名，否则下载后会被判定为「已损坏」无法打开。
+# 这里用 ad-hoc 签名（identity = "-"），不需要 Apple Developer 账号；
+# 仍不是正式公证，但能避免「已损坏」并走正常的「未知开发者」流程。
+echo "==> ad-hoc 签名"
+codesign --force --deep --sign - "$APP_DIR"
+codesign --verify --deep --strict "$APP_DIR" && echo "   签名校验通过"
+
 # ---- 5. 生成 .dmg ------------------------------------------------------------
 echo "==> 生成 $APP_NAME.dmg"
 DMG_STAGE="$(mktemp -d)/dmg"
@@ -165,4 +173,5 @@ echo "✅ 打包完成："
 echo "   App: $APP_DIR"
 echo "   DMG: $DMG_PATH"
 echo ""
-echo "提示：该 App 未签名、未公证。首次打开请右键 -> 打开，或在系统设置 -> 隐私与安全性 中允许。"
+echo "提示：该 App 为 ad-hoc 签名、未公证。从网上下载后首次打开，"
+echo "      请右键 App -> 打开，或先执行： xattr -dr com.apple.quarantine \"$APP_DIR\""

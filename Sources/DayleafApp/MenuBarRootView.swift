@@ -116,16 +116,33 @@ struct MenuBarRootView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("快速记录")
                 .font(.subheadline.weight(.semibold))
-            TextField("灵感、碎碎念、临时备注", text: $viewModel.quickNoteDraft)
-                .textFieldStyle(.roundedBorder)
-                .submitLabel(.done)
-                .focused($focusedField, equals: .quickNote)
-                .onSubmit {
-                    _ = viewModel.addQuickNote()
-                    focusedField = .quickNote
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: $viewModel.quickNoteDraft)
+                    .font(.body)
+                    .scrollContentBackground(.hidden)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 5)
+                    .focused($focusedField, equals: .quickNote)
+
+                if viewModel.quickNoteDraft.isEmpty {
+                    Text("灵感、碎碎念、临时备注")
+                        .font(.body)
+                        .foregroundStyle(.tertiary)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 12)
+                        .allowsHitTesting(false)
                 }
+            }
+            .frame(height: 88)
+            .background(.quaternary.opacity(0.28))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .overlay {
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(.quaternary)
+            }
             Button {
                 _ = viewModel.addQuickNote()
+                focusedField = .quickNote
             } label: {
                 Label("记录一条", systemImage: "plus.circle")
                     .frame(maxWidth: .infinity)
@@ -172,42 +189,41 @@ struct MenuBarRootView: View {
     }
 
     private var footer: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        HStack(alignment: .bottom, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
                 Button {
                     viewModel.chooseExportDirectory()
                 } label: {
                     Label("选择导出目录", systemImage: "folder")
                 }
-                Spacer()
-            }
 
-            Text(viewModel.exportDirectoryDisplay)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-                .truncationMode(.middle)
-
-            if let statusMessage = viewModel.statusMessage {
-                Text(statusMessage)
-                    .font(.caption)
+                Text(viewModel.exportDirectoryDisplay)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .lineLimit(3)
+                    .lineLimit(2)
                     .truncationMode(.middle)
-            }
 
-            Divider()
-
-            HStack {
-                Spacer()
-                Button(role: .destructive) {
-                    NSApp.terminate(nil)
-                } label: {
-                    Text("退出")
+                if let statusMessage = viewModel.statusMessage {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                        .truncationMode(.middle)
                 }
-                .buttonStyle(.bordered)
-                .keyboardShortcut("q", modifiers: .command)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(role: .destructive) {
+                NSApp.terminate(nil)
+            } label: {
+                Image(systemName: "power")
+                    .frame(width: 20, height: 20)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .keyboardShortcut("q", modifiers: .command)
+            .help("退出一日一笺")
+            .accessibilityLabel("退出一日一笺")
         }
     }
 }

@@ -27,6 +27,13 @@ final class DayleafViewModel: ObservableObject {
         startTicker()
     }
 
+    var menuTitle: String {
+        guard let activeSession else {
+            return ""
+        }
+        return Self.menuDurationText(activeSession.activeDurationSeconds)
+    }
+
     var menuSystemImage: String {
         if activeSession?.isPaused == true {
             return "pause.circle"
@@ -311,5 +318,19 @@ final class DayleafViewModel: ObservableObject {
                 self?.now = Date()
             }
         }
+    }
+
+    private static func menuDurationText(_ seconds: Int) -> String {
+        let totalMinutes = max(0, seconds) / 60
+        guard totalMinutes >= 60 else {
+            return "\(totalMinutes) \(totalMinutes == 1 ? "min" : "mins")"
+        }
+
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        if minutes == 0 {
+            return "\(hours)h"
+        }
+        return "\(hours)h \(minutes)\(minutes == 1 ? "min" : "mins")"
     }
 }

@@ -1,0 +1,296 @@
+import DayLogCore
+import SwiftUI
+
+struct MenuBarRootView: View {
+    @EnvironmentObject private var viewModel: DayLogViewModel
+    @FocusState private var focusedField: FocusedField?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            header
+            focusSection
+            Divider()
+            quickNoteSection
+            Divider()
+            timelineSection
+            footer
+        }
+        .padding(14)
+        .frame(width: 390)
+    }
+
+    private var header: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("一日一笺")
+                    .font(.headline)
+                Text(viewModel.now.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                viewModel.exportToday()
+            } label: {
+                Label("导出", systemImage: "square.and.arrow.up")
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+
+    @ViewBuilder
+    private var focusSection: some View {
+        if let session = viewModel.activeSession {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label(session.isPaused ? "已暂停" : "专注中", systemImage: session.isPaused ? "pause.circle" : "timer")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text(MarkdownExporter.durationText(session.activeDurationSeconds))
+                        .font(.system(.title3, design: .monospaced).weight(.semibold))
+                }
+
+                if let planned = session.plannedActivity {
+                    Text(planned)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+
+                HStack {
+                    Button {
+                        session.isPaused ? viewModel.resumeFocus() : viewModel.pauseFocus()
+                    } label: {
+                        Label(session.isPaused ? "继续" : "暂停", systemImage: session.isPaused ? "play.fill" : "pause.fill")
+                    }
+
+                    Spacer()
+                }
+
+                TextField("结束前记录实际做了什么", text: $viewModel.finishActivityDraft)
+                    .textFieldStyle(.roundedBorder)
+                    .submitLabel(.done)
+                    .focused($focusedField, equals: .finishActivity)
+                    .onSubmit {
+                        if viewModel.finishFocus() {
+                            focusedField = .quickNote
+                        } else {
+                            focusedField = .finishActivity
+                        }
+                    }
+
+                Button {
+                    _ = viewModel.finishFocus()
+                } label: {
+                    Label("结束并保存", systemImage: "checkmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("专注")
+                    .font(.subheadline.weight(.semibold))
+                TextField("计划做什么，可不填", text: $viewModel.plannedActivityDraft)
+                    .textFieldStyle(.roundedBorder)
+                    .submitLabel(.go)
+                    .focused($focusedField, equals: .plannedActivity)
+                    .onSubmit {
+                        if viewModel.startFocus() {
+                            focusedField = .finishActivity
+                        }
+                    }
+                Button {
+                    _ = viewModel.startFocus()
+                } label: {
+                    Label("开始专注", systemImage: "play.circle.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    private var quickNoteSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("快速记录")
+                .font(.subheadline.weight(.semibold))
+            TextField("灵感、碎碎念、临时备注", text: $viewModel.quickNoteDraft)
+                .textFieldStyle(.roundedBorder)
+                .submitLabel(.done)
+                .focused($focusedField, equals: .quickNote)
+                .onSubmit {
+                    _ = viewModel.addQuickNote()
+                    focusedField = .quickNote
+                }
+            Button {
+                _ = viewModel.addQuickNote()
+            } label: {
+                Label("记录一条", systemImage: "plus.circle")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+
+    private var timelineSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("今日时间线")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                if viewModel.todayEntriesNewestFirst.isEmpty == false {
+                    Text("\(viewModel.todayEntriesNewestFirst.count) 条")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if viewModel.todayEntriesNewestFirst.isEmpty {
+                Text("今天还没有记录。")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        ForEach(viewModel.todayEntriesNewestFirst) { entry in
+                            TimelineRow(entry: entry, now: viewModel.now)
+                        }
+                    }
+                }
+                .frame(minHeight: 130, maxHeight: 260)
+            }
+        }
+    }
+
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Button {
+                    viewModel.chooseExportDirectory()
+                } label: {
+                    Label("选择导出目录", systemImage: "folder")
+                }
+                Spacer()
+            }
+
+            Text(viewModel.exportDirectoryDisplay)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .truncationMode(.middle)
+
+            if let statusMessage = viewModel.statusMessage {
+                Text(statusMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+                    .truncationMode(.middle)
+            }
+        }
+    }
+}
+
+private enum FocusedField: Hashable {
+    case plannedActivity
+    case finishActivity
+    case quickNote
+}
+
+private struct TimelineRow: View {
+    let entry: DayEntry
+    let now: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Label(typeTitle, systemImage: iconName)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(typeColor)
+                Spacer()
+                Text(timeSummary)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            Text(content)
+                .font(.callout)
+                .lineLimit(4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let detail {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding(8)
+        .background(.quaternary.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var typeTitle: String {
+        switch entry {
+        case .focusSession:
+            "专注"
+        case .quickNote:
+            "记录"
+        }
+    }
+
+    private var iconName: String {
+        switch entry {
+        case .focusSession(let session):
+            session.endedAt == nil ? "timer" : "checkmark.circle"
+        case .quickNote:
+            "text.bubble"
+        }
+    }
+
+    private var typeColor: Color {
+        switch entry {
+        case .focusSession:
+            .accentColor
+        case .quickNote:
+            .primary
+        }
+    }
+
+    private var timeSummary: String {
+        switch entry {
+        case .focusSession(let session):
+            let start = session.startedAt.formatted(date: .omitted, time: .shortened)
+            let end = (session.endedAt ?? now).formatted(date: .omitted, time: .shortened)
+            return "\(start)-\(end)"
+        case .quickNote(let note):
+            return note.occurredAt.formatted(date: .omitted, time: .standard)
+        }
+    }
+
+    private var content: String {
+        switch entry {
+        case .focusSession(let session):
+            if session.actualActivity.isEmpty == false {
+                return session.actualActivity
+            }
+            return session.plannedActivity ?? "进行中的专注"
+        case .quickNote(let note):
+            return note.content
+        }
+    }
+
+    private var detail: String? {
+        switch entry {
+        case .focusSession(let session):
+            let duration = MarkdownExporter.durationText(session.activeDuration(until: now))
+            if let plannedActivity = session.plannedActivity, session.actualActivity.isEmpty == false {
+                return "计划：\(plannedActivity) · 有效专注 \(duration)"
+            }
+            return "有效专注 \(duration)"
+        case .quickNote(let note):
+            return "时间戳：\(note.occurredAt.formatted(.iso8601.year().month().day().time(includingFractionalSeconds: false).timeZone(separator: .colon)))"
+        }
+    }
+}

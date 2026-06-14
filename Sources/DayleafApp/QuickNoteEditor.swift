@@ -41,11 +41,14 @@ struct QuickNoteEditor: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         context.coordinator.parent = self
         guard let textView = scrollView.documentView as? PlaceholderTextView else { return }
+        textView.placeholderString = placeholder
+        // 正在用输入法组字（拼音预编辑）时，绝不回写 string，
+        // 否则每秒定时器触发的重绘会抹掉未上屏的内容，打断/取消输入。
+        if textView.hasMarkedText() { return }
         if textView.string != text {
             textView.string = text
             textView.needsDisplay = true
         }
-        textView.placeholderString = placeholder
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
@@ -92,7 +95,7 @@ final class PlaceholderTextView: NSTextView {
         super.draw(dirtyRect)
         guard string.isEmpty, placeholderString.isEmpty == false else { return }
         let attributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: NSColor.tertiaryLabelColor,
+            .foregroundColor: NSColor.secondaryLabelColor,
             .font: font ?? NSFont.preferredFont(forTextStyle: .body)
         ]
         let point = NSPoint(

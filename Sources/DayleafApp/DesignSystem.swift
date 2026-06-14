@@ -95,8 +95,9 @@ enum Palette {
     static let textSecondary = Color(light: 0x8A8A8E, dark: 0x8E8E93)
     static let textTertiary = Color(light: 0xB6B6BB, dark: 0x6E6E73)
 
-    static let accent = Color(light: 0x007AFF, dark: 0x0A84FF)
+    static let accent = Color(light: 0x007AFF, dark: 0x0A84FF)       // 专注身份色
     static let accentText = Color(light: 0x007AFF, dark: 0x409CFF)
+    static let note = Color(light: 0x2FA56A, dark: 0x4CD787)         // 记录身份色（快速记录框 + 时间线记录圆点）
     static let warn = Color(light: 0xFF9500, dark: 0xFF9F0A)
     static let danger = Color(light: 0xD7322B, dark: 0xFF6961)
     static let dangerFill = Color(light: 0xF7D8D6, dark: 0x5A2A2A)
@@ -163,8 +164,13 @@ struct SectionHeader: View {
 // MARK: - Soft Field
 
 struct SoftFieldBackground: ViewModifier {
+    /// 激活态：聚焦或鼠标悬停。激活时点亮 tint 身份色，未激活时为中性灰，所有输入框一致。
     var focused: Bool = false
     var elevated: Bool = false
+    /// 该输入框激活时点亮的身份色，应与它对应的时间线圆点同色；为空则用默认蓝。
+    var tint: Color? = nil
+
+    private var activeColor: Color { tint ?? Palette.accent }
 
     func body(content: Content) -> some View {
         content
@@ -175,7 +181,7 @@ struct SoftFieldBackground: ViewModifier {
             .overlay {
                 RoundedRectangle(cornerRadius: DS.controlRadius, style: .continuous)
                     .strokeBorder(
-                        focused ? Palette.accent.opacity(0.9) : Palette.tileBorder,
+                        focused ? activeColor.opacity(0.9) : Palette.tileBorder,
                         lineWidth: focused ? 1 : DS.hairline
                     )
             }
@@ -183,15 +189,16 @@ struct SoftFieldBackground: ViewModifier {
 }
 
 extension View {
-    func softField(focused: Bool = false, elevated: Bool = false) -> some View {
-        modifier(SoftFieldBackground(focused: focused, elevated: elevated))
+    func softField(focused: Bool = false, elevated: Bool = false, tint: Color? = nil) -> some View {
+        modifier(SoftFieldBackground(focused: focused, elevated: elevated, tint: tint))
     }
 }
 
 // MARK: - Button Styles
 
-/// 主操作：系统蓝填充。
+/// 主操作：实心填充，默认系统蓝；可传 fill 换成模块身份色（如记录用绿）。
 struct PrimaryButtonStyle: ButtonStyle {
+    var fill: Color = Palette.accent
     var expand: Bool = true
 
     func makeBody(configuration: Configuration) -> some View {
@@ -203,7 +210,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.horizontal, expand ? 0 : 16)
             .background {
                 RoundedRectangle(cornerRadius: DS.controlRadius, style: .continuous)
-                    .fill(Palette.accent.opacity(configuration.isPressed ? 0.78 : 1))
+                    .fill(fill.opacity(configuration.isPressed ? 0.78 : 1))
             }
             .contentShape(Rectangle())
     }

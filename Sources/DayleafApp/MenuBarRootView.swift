@@ -12,6 +12,9 @@ struct MenuBarRootView: View {
     @State private var showingAbout = false
     @State private var showingSettings = false
     @State private var quickNoteFocused = false
+    @State private var plannedHovered = false
+    @State private var finishHovered = false
+    @State private var quickNoteHovered = false
 
     @AppStorage(AppThemeStore.key) private var themeRaw = AppThemeStore.default
     private var theme: AppTheme { AppTheme(rawValue: themeRaw) ?? .dark }
@@ -132,7 +135,8 @@ struct MenuBarRootView: View {
                 .foregroundStyle(Palette.textPrimary)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
-                .softField(focused: focusedField == .finishActivity, elevated: true)
+                .softField(focused: focusedField == .finishActivity || finishHovered, elevated: true)
+                .onHover { finishHovered = $0 }
                 .submitLabel(.done)
                 .focused($focusedField, equals: .finishActivity)
                 .onSubmit {
@@ -173,7 +177,8 @@ struct MenuBarRootView: View {
                 .foregroundStyle(Palette.textPrimary)
                 .padding(.horizontal, 11)
                 .padding(.vertical, 9)
-                .softField(focused: focusedField == .plannedActivity)
+                .softField(focused: focusedField == .plannedActivity || plannedHovered)
+                .onHover { plannedHovered = $0 }
                 .submitLabel(.go)
                 .focused($focusedField, equals: .plannedActivity)
                 .onSubmit {
@@ -189,7 +194,7 @@ struct MenuBarRootView: View {
             } label: {
                 Label("开始专注", systemImage: "play.fill")
             }
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(NeutralButtonStyle())
         }
     }
 
@@ -208,7 +213,8 @@ struct MenuBarRootView: View {
                 onFocusChange: { quickNoteFocused = $0 }
             )
             .frame(height: 58)
-            .softField(focused: quickNoteFocused)
+            .softField(focused: quickNoteFocused || quickNoteHovered, tint: Palette.note)
+            .onHover { quickNoteHovered = $0 }
 
             Button {
                 if viewModel.addQuickNote() {
@@ -599,7 +605,7 @@ private struct TimelineRow: View {
         case .focusSession:
             Palette.accentText
         case .quickNote:
-            Palette.textSecondary
+            Palette.note
         }
     }
 

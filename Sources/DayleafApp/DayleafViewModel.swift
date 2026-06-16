@@ -229,6 +229,19 @@ final class DayleafViewModel: ObservableObject {
         }
     }
 
+    func copyTodayForAI() {
+        let exportDatabase = databaseWithRefreshedActiveDuration()
+        let markdown = exporter.markdown(for: now, database: exportDatabase, exportedAt: now)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+
+        if pasteboard.setString(markdown, forType: .string) {
+            statusMessage = "已复制给 AI"
+        } else {
+            statusMessage = "复制失败：无法写入剪贴板"
+        }
+    }
+
     func chooseExportDirectory() {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false

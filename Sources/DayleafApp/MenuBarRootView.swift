@@ -62,7 +62,7 @@ struct MenuBarRootView: View {
     }
 
     private static func toastContent(for message: String) -> (String, Bool) {
-        let errorMarkers = ["失败", "不能", "需要", "先写", "已有"]
+        let errorMarkers = ["失败", "不能", "需要", "先写", "已有", "无法"]
         let isError = errorMarkers.contains { message.contains($0) }
         // 导出成功只显示「已导出」，路径太长不进 toast
         let text = message.hasPrefix("已导出") ? "已导出" : message
@@ -83,14 +83,14 @@ struct MenuBarRootView: View {
             }
             Spacer()
             Button {
-                viewModel.exportToday()
+                viewModel.copyTodayForAI()
                 presentToast(viewModel.statusMessage)
             } label: {
-                Image(systemName: "square.and.arrow.up")
+                Image(systemName: "doc.on.clipboard")
             }
             .buttonStyle(IconButtonStyle())
-            .help("导出今天为标记文本")
-            .accessibilityLabel("导出今天")
+            .help("复制今天的记录给 AI")
+            .accessibilityLabel("复制给 AI")
         }
     }
 

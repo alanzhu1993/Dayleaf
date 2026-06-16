@@ -1,200 +1,200 @@
-# 2026-06-16 Copy to AI and PDF Export Design
+# 2026-06-16 复制给 AI 与保存 PDF 设计
 
-## Background
+## 背景
 
-The current app exposes "export Markdown" as the primary end-of-day action. This is technically useful, but it asks regular users to understand a file format they may not recognize or know how to open.
+当前应用把“导出 Markdown”放在日终整理的主入口。这个能力在技术上有用，但它要求普通用户理解一种他们可能不认识、也不知道用什么软件打开的文件格式。
 
-The product should instead expose actions by user intent:
+产品应该把入口改成用户真实想完成的事：
 
-- Copy today's material into an AI tool.
-- Save a human-readable record for archive, sharing, or printing.
+- 把今天的记录复制到 AI 工具里。
+- 保存一份人能直接阅读、归档、转发或打印的记录。
 
-Markdown can remain an internal structure for machine-readable content, but it should not be the main user-facing concept.
+Markdown 可以继续作为内部结构化内容，用来服务 AI 读取和测试，但不应该成为普通用户看到的核心概念。
 
-## Goals
+## 目标
 
-- Replace the primary "export today" action with "copy to AI".
-- Add a PDF save action for human-readable archive and sharing.
-- Keep generated content consistent across copy and export paths.
-- Avoid making regular users think about Markdown or `.md` files.
-- Preserve the ability to evolve advanced file export later without blocking this change.
+- 把主界面的“导出今天”改成“复制给 AI”。
+- 增加“保存为 PDF”，用于人类阅读、归档和分享。
+- 复制和导出使用一致的数据来源，避免内容不一致。
+- 普通用户界面不再强调 Markdown、MD 或标记文本。
+- 保留未来做高级导出能力的空间，但不让它干扰普通用户主路径。
 
-## Non-Goals
+## 不做什么
 
-- Do not integrate with any AI API.
-- Do not automatically send user records to third-party services.
-- Do not build a full history browser in this change.
-- Do not make PDF the source format for AI analysis.
-- Do not remove existing Markdown generation internals unless implementation proves it unnecessary.
+- 不接入任何 AI API。
+- 不自动把用户记录发送给第三方服务。
+- 不在这次做完整历史浏览器。
+- 不把 PDF 当作给 AI 分析的主要格式。
+- 不强行删除现有 Markdown 生成逻辑，除非实现时证明它已经没有必要。
 
-## User Experience
+## 用户体验
 
-### Primary Action: Copy to AI
+### 主入口：复制给 AI
 
-The main header action changes from "export today" to "copy to AI".
+主界面右上角原来的“导出今天”按钮改成“复制给 AI”。
 
-Behavior:
+行为：
 
-1. The user clicks the header button.
-2. The app generates today's structured journal material.
-3. The app writes that text to the system clipboard.
-4. The app shows a short success toast: "已复制给 AI".
+1. 用户点击主入口按钮。
+2. 应用生成当天的结构化日记材料。
+3. 应用把这段文本写入系统剪贴板。
+4. 应用显示简短成功提示：“已复制给 AI”。
 
-The copied text can remain Markdown because AI tools parse it well. The interface should describe the result by purpose, not by format.
+复制出去的文本可以继续使用 Markdown 结构，因为 AI 工具更容易读懂。界面只描述用途，不描述格式。
 
-Suggested labels:
+建议文案：
 
-- Tooltip: "复制今天的记录给 AI"
-- Accessibility label: "复制给 AI"
-- Success toast: "已复制给 AI"
-- Failure toast: "复制失败：..."
+- 悬浮提示：“复制今天的记录给 AI”
+- 无障碍标签：“复制给 AI”
+- 成功提示：“已复制给 AI”
+- 失败提示：“复制失败：...”
 
-### Secondary Action: Save as PDF
+### 次级入口：保存为 PDF
 
-PDF export should live in Settings, next to the export directory controls.
+“保存为 PDF”放在设置页，和导出目录设置放在一起。
 
-Behavior:
+行为：
 
-1. The user chooses "保存为 PDF".
-2. The app renders today's record into a readable PDF layout.
-3. The app saves the PDF to the configured export directory.
-4. The app shows a short success toast: "PDF 已保存".
+1. 用户点击“保存为 PDF”。
+2. 应用把今天的记录渲染成可阅读的 PDF。
+3. 应用把 PDF 保存到当前配置的导出目录。
+4. 应用显示简短成功提示：“PDF 已保存”。
 
-The PDF is for people, not machines. It should look like a simple daily review: title, date, overview, timeline, and total focus duration. It should not include the AI prompt by default, and it should not look like raw Markdown source.
+PDF 是给人看的，不是给机器看的。它应该像一份简洁的日终回顾：标题、日期、概览、时间线、总专注时长。默认不展示“给 AI 的提示”，也不能看起来像 Markdown 原文。
 
-Suggested labels:
+建议文案：
 
-- Button: "保存为 PDF"
-- Directory text: "需要归档时，可以把今天的记录保存成 PDF。"
-- Success toast: "PDF 已保存"
-- Failure toast: "PDF 保存失败：..."
+- 按钮：“保存为 PDF”
+- 目录说明：“需要归档时，可以把今天的记录保存成 PDF。”
+- 成功提示：“PDF 已保存”
+- 失败提示：“PDF 保存失败：...”
 
-### Markdown Role
+### Markdown 的角色
 
-Markdown remains an internal intermediate or advanced-compatible format.
+Markdown 只作为内部中间格式，或未来高级功能的兼容基础。
 
-User-facing UI should avoid:
+普通用户界面避免出现这些词：
 
-- "MD"
-- "Markdown"
-- "标记文本"
+- “MD”
+- “Markdown”
+- “标记文本”
 
-Exception: developer docs, tests, or future advanced settings may still mention Markdown.
+例外：开发文档、测试、未来高级设置可以继续提到 Markdown。
 
-## Architecture
+## 架构
 
-### Existing Components
+### 现有组件
 
-- `MarkdownExporter.markdown(...)` already generates a complete text representation for one day.
-- `MarkdownExporter.export(...)` writes that Markdown to a `.md` file.
-- `DayleafViewModel.exportToday()` currently drives the header action.
-- `MenuBarRootView.header` currently shows the export button.
-- Settings already contains export directory controls.
+- `MarkdownExporter.markdown(...)` 已经可以生成某一天的完整文本。
+- `MarkdownExporter.export(...)` 会把 Markdown 写成 `.md` 文件。
+- `DayleafViewModel.exportToday()` 目前驱动主界面的导出动作。
+- `MenuBarRootView.header` 目前显示导出按钮。
+- 设置页已经有导出目录控制。
 
-### Proposed Components
+### 新增或调整组件
 
-#### Clipboard Copy
+#### 复制到剪贴板
 
-Add a view-model method such as `copyTodayForAI()`.
+新增一个视图模型方法，例如 `copyTodayForAI()`。
 
-Responsibilities:
+职责：
 
-- Refresh any active focus duration before generating content.
-- Generate today's structured text with the existing exporter.
-- Write the string to `NSPasteboard.general`.
-- Update `statusMessage`.
+- 生成内容前刷新正在进行中的专注时长。
+- 使用现有 exporter 生成今天的结构化文本。
+- 写入 `NSPasteboard.general`。
+- 更新 `statusMessage`。
 
-The method should not save files and should not require an export directory.
+这个方法不保存文件，也不依赖导出目录。
 
-#### PDF Export
+#### PDF 导出
 
-Add a PDF export path that produces a readable document.
+新增一个 PDF 导出路径，生成可阅读文档。
 
-Possible implementation options:
+可选实现方式：
 
-- Use AppKit print/PDF rendering from a lightweight native view.
-- Generate an attributed text document and write it as PDF.
-- Convert the structured daily data into a simple PDF renderer independent of SwiftUI.
+- 用 AppKit 从一个轻量原生视图渲染 PDF。
+- 生成 attributed text 文档，再写成 PDF。
+- 基于当天结构化数据写一个简单 PDF renderer，尽量独立于 SwiftUI。
 
-The implementation plan should choose the smallest reliable macOS-native approach. The PDF renderer should share data with the copy path, but it does not need to share Markdown formatting.
+实现计划阶段再根据 SwiftUI / AppKit 约束选择最小可靠方案。PDF renderer 应该和复制路径共享同一批当天数据，但不需要共享 Markdown 排版。
 
-#### Existing Markdown File Export
+#### 现有 Markdown 文件导出
 
-The old `.md` export should no longer be the primary action.
+旧的 `.md` 文件导出不再作为主入口。
 
-Keep the method available internally if it remains useful for copy generation, tests, or future advanced export. Do not expose Markdown file export in the regular user interface in this change.
+如果它仍然对复制生成、测试或未来高级导出有用，可以保留内部方法。这次不把 Markdown 文件导出暴露在普通用户界面里。
 
-## Data Flow
+## 数据流
 
-Copy to AI:
+复制给 AI：
 
-1. UI calls `copyTodayForAI()`.
-2. View model refreshes active focus duration.
-3. Markdown exporter generates structured AI-ready text.
-4. View model writes to clipboard.
-5. UI shows toast from `statusMessage`.
+1. UI 调用 `copyTodayForAI()`。
+2. 视图模型刷新正在进行中的专注时长。
+3. Markdown exporter 生成适合 AI 读取的结构化文本。
+4. 视图模型把文本写入剪贴板。
+5. UI 根据 `statusMessage` 显示提示。
 
-Save as PDF:
+保存为 PDF：
 
-1. Settings UI calls a new PDF save method.
-2. View model refreshes active focus duration.
-3. PDF exporter receives today's entries and summary data.
-4. PDF exporter writes a dated `.pdf` file.
-5. View model updates `statusMessage`.
-6. UI shows toast from `statusMessage`.
+1. 设置页 UI 调用新的 PDF 保存方法。
+2. 视图模型刷新正在进行中的专注时长。
+3. PDF exporter 接收今天的记录和概览数据。
+4. PDF exporter 写入带日期的 `.pdf` 文件。
+5. 视图模型更新 `statusMessage`。
+6. UI 根据 `statusMessage` 显示提示。
 
-## File Naming
+## 文件命名
 
-Generated user files must include the date.
+生成给用户看的文件必须带日期。
 
-PDF filename:
+PDF 文件名：
 
 ```text
 YYYY-MM-DD-一日一笺.pdf
 ```
 
-If the file already exists, append a numeric suffix:
+如果文件已存在，追加数字后缀：
 
 ```text
 YYYY-MM-DD-一日一笺-2.pdf
 ```
 
-This mirrors the current Markdown export behavior.
+这和当前 Markdown 导出的防覆盖逻辑保持一致。
 
-## Error Handling
+## 异常处理
 
-Clipboard copy:
+复制给 AI：
 
-- If the app cannot write to the pasteboard, show "复制失败：...".
-- Do not change local records.
-- Do not require an export directory.
+- 如果无法写入剪贴板，显示“复制失败：...”。
+- 不修改本地记录。
+- 不要求用户设置导出目录。
 
-PDF export:
+保存为 PDF：
 
-- If the target directory cannot be created or written, show "PDF 保存失败：...".
-- If rendering fails, show "PDF 保存失败：...".
-- Do not change local records.
+- 如果目标目录无法创建或写入，显示“PDF 保存失败：...”。
+- 如果渲染失败，显示“PDF 保存失败：...”。
+- 不修改本地记录。
 
-## Testing And Verification
+## 测试与验证
 
-Automated checks should cover:
+自动检查覆盖：
 
-- AI copy content includes the same overview, timeline, timestamps, durations, and prompt currently generated for Markdown.
-- Active focus duration is refreshed before copy and PDF export.
-- PDF file names include the date and avoid overwriting existing files.
-- Existing local data persistence remains unchanged.
+- 复制给 AI 的内容包含当前 Markdown 已有的概览、时间线、时间戳、时长和提示。
+- 复制和 PDF 导出前都会刷新正在进行中的专注时长。
+- PDF 文件名带日期，并且不会覆盖已有文件。
+- 现有本地数据保存逻辑不受影响。
 
-Manual QA should cover:
+手动 QA 覆盖：
 
-- Header button copies content that can be pasted into an AI chat.
-- Success toast reads "已复制给 AI".
-- Settings or secondary action can save a PDF.
-- Saved PDF opens in macOS Preview.
-- PDF is readable and not raw Markdown source.
-- Existing records, editing, deletion, and focus timing still work.
+- 主界面按钮可以复制内容，并能粘贴到 AI 聊天框。
+- 成功提示显示“已复制给 AI”。
+- 设置页可以保存 PDF。
+- 保存后的 PDF 可以用 macOS 预览打开。
+- PDF 可读，并且不是 Markdown 原文。
+- 现有记录、编辑、删除和专注计时仍然正常。
 
-## Implementation Notes
+## 实现计划备注
 
-- Use the Settings view for "保存为 PDF".
-- Choose the smallest reliable macOS-native PDF renderer after checking SwiftUI/AppKit constraints in the codebase.
-- Keep Markdown file export out of regular user-facing UI.
+- “保存为 PDF”放在设置页。
+- PDF 生成方式在实现计划阶段选择最小可靠的 macOS 原生方案。
+- Markdown 文件导出不进入普通用户界面。

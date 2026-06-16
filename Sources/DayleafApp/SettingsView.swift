@@ -18,12 +18,18 @@ struct SettingsView: View {
                 Button {
                     viewModel.chooseExportDirectory()
                 } label: {
-                    Label("选择导出目录", systemImage: "folder")
+                    Label("选择目录", systemImage: "folder")
+                }
+
+                Button {
+                    viewModel.saveTodayPDF()
+                } label: {
+                    Label("保存为 PDF", systemImage: "doc.richtext")
                 }
             } header: {
-                Text("导出")
+                Text("保存")
             } footer: {
-                Text("每天的记录会导出为标记文本，保存到此目录。")
+                Text("需要归档时，可以把今天的记录保存成 PDF。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

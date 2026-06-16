@@ -358,7 +358,7 @@ private struct SettingsPanel: View {
             }
 
             VStack(alignment: .leading, spacing: 7) {
-                Text("导出目录")
+                Text("保存目录")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Palette.textSecondary)
                 Text(viewModel.exportDirectoryDisplay)
@@ -371,13 +371,22 @@ private struct SettingsPanel: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
                     .tile(radius: DS.controlRadius)
-                Button {
-                    viewModel.chooseExportDirectory()
-                } label: {
-                    Label("选择目录…", systemImage: "folder")
+                VStack(spacing: 8) {
+                    Button {
+                        viewModel.chooseExportDirectory()
+                    } label: {
+                        Label("选择目录…", systemImage: "folder")
+                    }
+                    .buttonStyle(NeutralButtonStyle())
+
+                    Button {
+                        viewModel.saveTodayPDF()
+                    } label: {
+                        Label("保存为 PDF", systemImage: "doc.richtext")
+                    }
+                    .buttonStyle(NeutralButtonStyle())
                 }
-                .buttonStyle(NeutralButtonStyle())
-                Text("每天的记录会导出为标记文本，保存到此目录。")
+                Text("需要归档时，可以把今天的记录保存成 PDF。")
                     .font(.caption2)
                     .foregroundStyle(Palette.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)

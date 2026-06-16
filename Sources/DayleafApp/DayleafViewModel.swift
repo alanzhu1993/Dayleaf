@@ -262,7 +262,7 @@ final class DayleafViewModel: ObservableObject {
         panel.allowsMultipleSelection = false
         panel.canCreateDirectories = true
         panel.prompt = "选择"
-        panel.message = "选择一日一笺标记文本的导出目录"
+        panel.message = "选择一日一笺 PDF 的保存目录"
         panel.directoryURL = existingDirectoryForPanel()
         panel.level = .modalPanel
 

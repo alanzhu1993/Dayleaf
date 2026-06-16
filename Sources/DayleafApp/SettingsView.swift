@@ -26,6 +26,12 @@ struct SettingsView: View {
                 } label: {
                     Label("保存为 PDF", systemImage: "doc.richtext")
                 }
+
+                if let statusMessage = viewModel.statusMessage {
+                    Text(statusMessage)
+                        .font(.caption)
+                        .foregroundStyle(Self.isErrorStatus(statusMessage) ? .red : .secondary)
+                }
             } header: {
                 Text("保存")
             } footer: {
@@ -42,5 +48,9 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 460, height: 320)
+    }
+
+    private static func isErrorStatus(_ message: String) -> Bool {
+        ["失败", "不能", "需要", "先写", "已有", "无法"].contains { message.contains($0) }
     }
 }

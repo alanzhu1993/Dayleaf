@@ -297,9 +297,9 @@ struct MenuBarRootView: View {
                     Label("设置", systemImage: "gearshape")
                 }
                 .buttonStyle(FooterButtonStyle())
-                .help("导出目录、主题等设置")
+                .help("保存目录、主题等设置")
                 .popover(isPresented: $showingSettings, arrowEdge: .bottom) {
-                    SettingsPanel()
+                    SettingsPanel(onStatusMessage: presentToast)
                         .environmentObject(viewModel)
                 }
 
@@ -335,6 +335,7 @@ struct MenuBarRootView: View {
 private struct SettingsPanel: View {
     @EnvironmentObject private var viewModel: DayleafViewModel
     @AppStorage(AppThemeStore.key) private var themeRaw = AppThemeStore.default
+    let onStatusMessage: (String?) -> Void
 
     private var theme: AppTheme { AppTheme(rawValue: themeRaw) ?? .dark }
 
@@ -374,6 +375,7 @@ private struct SettingsPanel: View {
                 VStack(spacing: 8) {
                     Button {
                         viewModel.chooseExportDirectory()
+                        onStatusMessage(viewModel.statusMessage)
                     } label: {
                         Label("选择目录…", systemImage: "folder")
                     }
@@ -381,6 +383,7 @@ private struct SettingsPanel: View {
 
                     Button {
                         viewModel.saveTodayPDF()
+                        onStatusMessage(viewModel.statusMessage)
                     } label: {
                         Label("保存为 PDF", systemImage: "doc.richtext")
                     }

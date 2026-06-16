@@ -272,9 +272,9 @@ final class DayleafViewModel: ObservableObject {
         if panel.runModal() == .OK, let url = panel.url {
             settings.exportDirectoryPath = url.path
             saveSettings()
-            statusMessage = "导出目录已更新。"
+            statusMessage = "保存目录已更新。"
         } else {
-            statusMessage = "未修改导出目录。"
+            statusMessage = "未修改保存目录。"
         }
     }
 

@@ -7,6 +7,7 @@ struct DayleafCoreCheck {
         try checkFocusDurationExcludesPausedIntervals()
         try checkEntriesAreFilteredAndSorted()
         try checkMarkdownExportUsesConfiguredDirectory()
+        try checkExportFileNamerAvoidsOverwrites()
         try checkJSONStoreRoundTrip()
         print("DayleafCoreCheck passed")
     }
@@ -107,6 +108,32 @@ struct DayleafCoreCheck {
         try expect(result.markdown.contains("2026-06-13T10:03:12Z"), "markdown should include precise timestamp")
         try expect(result.markdown.contains("## 给人工智能的提示"), "导出内容应包含中文人工智能提示章节")
         try expect(result.markdown.contains("像一位真诚、温和的朋友一样"), "markdown should include warm friend-style analysis prompt")
+    }
+
+    private static func checkExportFileNamerAvoidsOverwrites() throws {
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer {
+            try? FileManager.default.removeItem(at: temporaryDirectory)
+        }
+
+        try FileManager.default.createDirectory(at: temporaryDirectory, withIntermediateDirectories: true)
+
+        let firstURL = ExportFileNamer.availableFileURL(
+            in: temporaryDirectory,
+            baseName: "2026-06-16-一日一笺",
+            fileExtension: "pdf"
+        )
+        try expect(firstURL.lastPathComponent == "2026-06-16-一日一笺.pdf", "first PDF export should use base name")
+
+        try Data().write(to: firstURL)
+
+        let secondURL = ExportFileNamer.availableFileURL(
+            in: temporaryDirectory,
+            baseName: "2026-06-16-一日一笺",
+            fileExtension: "pdf"
+        )
+        try expect(secondURL.lastPathComponent == "2026-06-16-一日一笺-2.pdf", "second PDF export should avoid overwriting")
     }
 
     private static func checkJSONStoreRoundTrip() throws {

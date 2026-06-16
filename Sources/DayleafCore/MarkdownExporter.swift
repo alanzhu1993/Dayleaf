@@ -77,7 +77,12 @@ public struct MarkdownExporter: Sendable {
         try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
 
         let baseName = "\(dateFormatter.string(from: date))-一日一笺"
-        let fileURL = availableFileURL(in: directoryURL, baseName: baseName, extension: "md", fileManager: fileManager)
+        let fileURL = ExportFileNamer.availableFileURL(
+            in: directoryURL,
+            baseName: baseName,
+            fileExtension: "md",
+            fileManager: fileManager
+        )
         let markdown = markdown(for: date, database: database, exportedAt: exportedAt)
         try markdown.write(to: fileURL, atomically: true, encoding: .utf8)
         return MarkdownExportResult(fileURL: fileURL, markdown: markdown)
@@ -93,21 +98,6 @@ public struct MarkdownExporter: Sendable {
         case .quickNote(let note):
             return "| \(timeFormatter.string(from: note.occurredAt)) | \(timestampFormatter.string(from: note.occurredAt)) | 记录 | \(Self.escapeTable(note.content)) | - |"
         }
-    }
-
-    private func availableFileURL(
-        in directoryURL: URL,
-        baseName: String,
-        extension fileExtension: String,
-        fileManager: FileManager
-    ) -> URL {
-        var candidate = directoryURL.appendingPathComponent("\(baseName).\(fileExtension)")
-        var suffix = 2
-        while fileManager.fileExists(atPath: candidate.path) {
-            candidate = directoryURL.appendingPathComponent("\(baseName)-\(suffix).\(fileExtension)")
-            suffix += 1
-        }
-        return candidate
     }
 
     private var dateFormatter: DateFormatter {

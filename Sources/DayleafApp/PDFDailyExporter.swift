@@ -58,6 +58,19 @@ struct PDFDailyExporter {
 }
 
 private final class DailyPDFView: NSView {
+    private struct PDFLine {
+        var text: String
+        var font: NSFont
+        var color: NSColor
+        var bottomGap: CGFloat
+    }
+
+    private static let pageWidth: CGFloat = 595
+    private static let minimumPageHeight: CGFloat = 842
+    private static let horizontalInset: CGFloat = 52
+    private static let topInset: CGFloat = 44
+    private static let bottomInset: CGFloat = 44
+
     private let date: Date
     private let exportedAt: Date
     private let entries: [DayEntry]
@@ -70,8 +83,8 @@ private final class DailyPDFView: NSView {
         self.exportedAt = exportedAt
         self.entries = entries
         self.timeZone = timeZone
-        let height = max(842, 260 + entries.count * 52)
-        super.init(frame: CGRect(x: 0, y: 0, width: 595, height: height))
+        super.init(frame: CGRect(x: 0, y: 0, width: Self.pageWidth, height: Self.minimumPageHeight))
+        setFrameSize(CGSize(width: Self.pageWidth, height: measuredContentHeight()))
     }
 
     @available(*, unavailable)
@@ -83,11 +96,13 @@ private final class DailyPDFView: NSView {
         NSColor.white.setFill()
         bounds.fill()
 
-        var y: CGFloat = 44
-        draw("一日一笺", at: &y, font: .systemFont(ofSize: 28, weight: .semibold), color: .black, bottomGap: 8)
-        draw(dateFormatter.string(from: date), at: &y, font: .systemFont(ofSize: 13), color: .darkGray, bottomGap: 24)
+        var y = Self.topInset
+        for line in pdfLines() {
+            draw(line, at: &y)
+        }
+    }
 
-        draw("概览", at: &y, font: .systemFont(ofSize: 17, weight: .semibold), color: .black, bottomGap: 10)
+    private func pdfLines() -> [PDFLine] {
         let focusSessions = entries.compactMap { entry -> FocusSession? in
             if case .focusSession(let session) = entry { return session }
             return nil
@@ -100,37 +115,67 @@ private final class DailyPDFView: NSView {
             partial + session.activeDuration(until: exportedAt)
         }
 
-        draw("专注记录：\(focusSessions.count)", at: &y, font: .systemFont(ofSize: 12), color: .black, bottomGap: 5)
-        draw("快速记录：\(quickNotes.count)", at: &y, font: .systemFont(ofSize: 12), color: .black, bottomGap: 5)
-        draw("总专注时长：\(MarkdownExporter.durationText(totalFocusSeconds))", at: &y, font: .systemFont(ofSize: 12), color: .black, bottomGap: 22)
+        var lines: [PDFLine] = [
+            PDFLine(text: "一日一笺", font: .systemFont(ofSize: 28, weight: .semibold), color: .black, bottomGap: 8),
+            PDFLine(text: dateFormatter.string(from: date), font: .systemFont(ofSize: 13), color: .darkGray, bottomGap: 24),
+            PDFLine(text: "概览", font: .systemFont(ofSize: 17, weight: .semibold), color: .black, bottomGap: 10),
+            PDFLine(text: "专注记录：\(focusSessions.count)", font: .systemFont(ofSize: 12), color: .black, bottomGap: 5),
+            PDFLine(text: "快速记录：\(quickNotes.count)", font: .systemFont(ofSize: 12), color: .black, bottomGap: 5),
+            PDFLine(text: "总专注时长：\(MarkdownExporter.durationText(totalFocusSeconds))", font: .systemFont(ofSize: 12), color: .black, bottomGap: 22),
+            PDFLine(text: "时间线", font: .systemFont(ofSize: 17, weight: .semibold), color: .black, bottomGap: 12)
+        ]
 
-        draw("时间线", at: &y, font: .systemFont(ofSize: 17, weight: .semibold), color: .black, bottomGap: 12)
         if entries.isEmpty {
-            draw("今日暂无记录", at: &y, font: .systemFont(ofSize: 12), color: .darkGray, bottomGap: 8)
+            lines.append(PDFLine(text: "今日暂无记录", font: .systemFont(ofSize: 12), color: .darkGray, bottomGap: 8))
         } else {
             for entry in entries {
-                draw(entryTitle(entry), at: &y, font: .systemFont(ofSize: 12, weight: .semibold), color: .black, bottomGap: 4)
-                draw(entryDetail(entry), at: &y, font: .systemFont(ofSize: 11), color: .darkGray, bottomGap: 14)
+                lines.append(PDFLine(text: entryTitle(entry), font: .systemFont(ofSize: 12, weight: .semibold), color: .black, bottomGap: 4))
+                lines.append(PDFLine(text: entryDetail(entry), font: .systemFont(ofSize: 11), color: .darkGray, bottomGap: 14))
             }
         }
+
+        return lines
     }
 
-    private func draw(_ text: String, at y: inout CGFloat, font: NSFont, color: NSColor, bottomGap: CGFloat) {
+    private func measuredContentHeight() -> CGFloat {
+        let contentHeight = pdfLines().reduce(Self.topInset + Self.bottomInset) { partial, line in
+            partial + measuredTextHeight(for: line) + line.bottomGap
+        }
+        return max(Self.minimumPageHeight, ceil(contentHeight))
+    }
+
+    private func draw(_ line: PDFLine, at y: inout CGFloat) {
+        let height = measuredTextHeight(for: line)
+        let rect = CGRect(x: Self.horizontalInset, y: y, width: textWidth, height: height)
+        (line.text as NSString).draw(
+            with: rect,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attributes(for: line)
+        )
+        y += height + line.bottomGap
+    }
+
+    private func measuredTextHeight(for line: PDFLine) -> CGFloat {
+        let rect = CGSize(width: textWidth, height: .greatestFiniteMagnitude)
+        return ceil((line.text as NSString).boundingRect(
+            with: rect,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attributes(for: line)
+        ).height)
+    }
+
+    private func attributes(for line: PDFLine) -> [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineBreakMode = .byWordWrapping
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
-            .foregroundColor: color,
+        return [
+            .font: line.font,
+            .foregroundColor: line.color,
             .paragraphStyle: paragraph
         ]
-        let rect = CGRect(x: 52, y: y, width: bounds.width - 104, height: 1_000)
-        let height = ceil((text as NSString).boundingRect(
-            with: rect.size,
-            options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: attributes
-        ).height)
-        (text as NSString).draw(with: CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: height), options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: attributes)
-        y += height + bottomGap
+    }
+
+    private var textWidth: CGFloat {
+        bounds.width - Self.horizontalInset * 2
     }
 
     private func entryTitle(_ entry: DayEntry) -> String {

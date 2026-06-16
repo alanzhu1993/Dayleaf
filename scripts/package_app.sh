@@ -108,7 +108,7 @@ iconutil -c icns "$ICONSET" -o "$RES_DIR/AppIcon.icns"
 
 # ---- 4. 写 Info.plist --------------------------------------------------------
 echo "==> 写 Info.plist"
-SHORT_VERSION="${DAYLEAF_VERSION:-0.3}"
+SHORT_VERSION="${DAYLEAF_VERSION:-0.4}"
 BUILD_NUMBER="${DAYLEAF_BUILD:-1}"
 cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

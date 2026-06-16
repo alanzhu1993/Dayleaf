@@ -15,14 +15,17 @@ final class DayleafViewModel: ObservableObject {
 
     private let store: JSONDayleafStore
     private let exporter: MarkdownExporter
+    private let pdfExporter: PDFDailyExporter
     private var timer: Timer?
 
     init(
         store: JSONDayleafStore = .live(),
-        exporter: MarkdownExporter = MarkdownExporter()
+        exporter: MarkdownExporter = MarkdownExporter(),
+        pdfExporter: PDFDailyExporter = PDFDailyExporter()
     ) {
         self.store = store
         self.exporter = exporter
+        self.pdfExporter = pdfExporter
         load()
         startTicker()
     }
@@ -239,6 +242,16 @@ final class DayleafViewModel: ObservableObject {
             statusMessage = "已复制给 AI"
         } else {
             statusMessage = "复制失败：无法写入剪贴板"
+        }
+    }
+
+    func saveTodayPDF() {
+        do {
+            let exportDatabase = databaseWithRefreshedActiveDuration()
+            _ = try pdfExporter.export(date: now, database: exportDatabase, settings: settings, exportedAt: now)
+            statusMessage = "PDF 已保存"
+        } catch {
+            statusMessage = "PDF 保存失败：\(error.localizedDescription)"
         }
     }
 

@@ -16,7 +16,6 @@ final class DayleafViewModel: ObservableObject {
     @Published private(set) var hasStoredAPIKey = false
     @Published private(set) var isGeneratingJournal = false
     @Published var selectedJournalID: UUID?
-    @Published var journalEditorStatus: String?
     @Published var statusMessage: String?
     @Published var now = Date()
 
@@ -421,10 +420,6 @@ final class DayleafViewModel: ObservableObject {
         } catch {
             statusMessage = "日记 PDF 保存失败：\(error.localizedDescription)"
         }
-    }
-
-    func updateJournalEditorStatus(_ message: String) {
-        journalEditorStatus = message
     }
 
     func saveTodayPDF() {

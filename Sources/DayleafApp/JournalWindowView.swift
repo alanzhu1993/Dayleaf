@@ -110,18 +110,11 @@ struct JournalWindowView: View {
 
                 JournalBodyEditor(
                     text: $contentDraft,
-                    onFocusChange: { contentEditorFocused = $0 },
-                    onKeyEvent: { viewModel.updateJournalEditorStatus($0) }
+                    onFocusChange: { contentEditorFocused = $0 }
                 )
                     .padding(4)
                     .frame(minHeight: 260)
                     .softField(focused: contentEditorFocused, elevated: true)
-
-                if let editorStatus = viewModel.journalEditorStatus {
-                    Text(editorStatus)
-                        .font(.caption)
-                        .foregroundStyle(Palette.textTertiary)
-                }
 
                 if confirmingDelete {
                     deleteConfirm(for: journal)

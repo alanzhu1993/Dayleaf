@@ -6,13 +6,9 @@ import SwiftUI
 struct JournalBodyEditor: NSViewRepresentable {
     @Binding var text: String
     var onFocusChange: (Bool) -> Void = { _ in }
-    var onKeyEvent: (String) -> Void = { _ in }
 
     func makeNSView(context: Context) -> NSScrollView {
         let textView = JournalTextView()
-        textView.onKeyEvent = { message in
-            context.coordinator.parent.onKeyEvent(message)
-        }
         textView.delegate = context.coordinator
         textView.string = text
         textView.isEditable = true
@@ -90,8 +86,6 @@ struct JournalBodyEditor: NSViewRepresentable {
 }
 
 private final class JournalTextView: NSTextView {
-    var onKeyEvent: (String) -> Void = { _ in }
-
     override var acceptsFirstResponder: Bool {
         true
     }
@@ -114,7 +108,6 @@ private final class JournalTextView: NSTextView {
     override func keyDown(with event: NSEvent) {
         window?.makeKeyAndOrderFront(nil)
         window?.makeFirstResponder(self)
-        onKeyEvent("正文已收到按键：\(event.charactersIgnoringModifiers ?? "")")
 
         if event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.command) {
             super.keyDown(with: event)

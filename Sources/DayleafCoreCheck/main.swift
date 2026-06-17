@@ -155,9 +155,23 @@ struct DayleafCoreCheck {
             ],
             quickNotes: [
                 QuickNote(content: "Quick thought", occurredAt: date("2026-06-13T10:00:00Z"))
+            ],
+            journals: [
+                DailyJournal(
+                    date: date("2026-06-13T00:00:00Z"),
+                    title: "今日一笺",
+                    content: "今天我完成了一段专注，也记下了一个想法。",
+                    sourceEntryIDs: [],
+                    generatedAt: date("2026-06-13T12:00:00Z"),
+                    modelName: "deepseek-chat"
+                )
             ]
         )
-        let settings = DayleafSettings(exportDirectoryPath: temporaryDirectory.path)
+        let settings = DayleafSettings(
+            exportDirectoryPath: temporaryDirectory.path,
+            aiBaseURL: "https://api.deepseek.com/v1",
+            aiModel: "deepseek-chat"
+        )
 
         try store.saveDatabase(database)
         try store.saveSettings(settings)

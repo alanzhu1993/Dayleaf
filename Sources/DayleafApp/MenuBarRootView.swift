@@ -82,15 +82,14 @@ struct MenuBarRootView: View {
                     .foregroundStyle(Palette.textSecondary)
             }
             Spacer()
-            Button {
+            HeaderIconButton(systemImage: "book.closed", tooltip: "打开日记") {
+                JournalWindowPresenter.shared.show(viewModel: viewModel)
+            }
+
+            HeaderIconButton(systemImage: "doc.on.clipboard", tooltip: "复制给 AI") {
                 viewModel.copyTodayForAI()
                 presentToast(viewModel.statusMessage)
-            } label: {
-                Image(systemName: "doc.on.clipboard")
             }
-            .buttonStyle(IconButtonStyle())
-            .help("复制今天的记录给 AI")
-            .accessibilityLabel("复制给 AI")
         }
     }
 
@@ -328,6 +327,47 @@ struct MenuBarRootView: View {
             }
         }
     }
+
+}
+
+// MARK: - Header Icon Button
+
+private struct HeaderIconButton: View {
+    let systemImage: String
+    let tooltip: String
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+        }
+        .buttonStyle(IconButtonStyle())
+        .help(tooltip)
+        .accessibilityLabel(tooltip)
+        .onHover { isHovering = $0 }
+        .overlay(alignment: .bottom) {
+            if isHovering {
+                Text(tooltip)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(Palette.textPrimary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background {
+                        Capsule(style: .continuous).fill(Palette.control)
+                    }
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .strokeBorder(Palette.tileBorder, lineWidth: DS.hairline)
+                    }
+                    .fixedSize()
+                    .offset(y: 28)
+                    .allowsHitTesting(false)
+                    .zIndex(20)
+            }
+        }
+    }
 }
 
 // MARK: - Settings Panel
@@ -394,9 +434,53 @@ private struct SettingsPanel: View {
                     .foregroundStyle(Palette.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("AI")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Palette.textSecondary)
+                TextField("Base URL", text: $viewModel.aiBaseURLDraft)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(Palette.textPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .softField(elevated: true)
+                TextField("Model", text: $viewModel.aiModelDraft)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(Palette.textPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .softField(elevated: true)
+                Button {
+                    viewModel.saveAISettings()
+                    onStatusMessage(viewModel.statusMessage)
+                } label: {
+                    Label("保存 AI 设置", systemImage: "checkmark")
+                }
+                .buttonStyle(NeutralButtonStyle())
+
+                SecureField(viewModel.hasStoredAPIKey ? "已保存，可输入新 Key 覆盖" : "API Key", text: $viewModel.aiAPIKeyDraft)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(Palette.textPrimary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .softField(elevated: true)
+                Button {
+                    viewModel.saveAIAPIKey()
+                    onStatusMessage(viewModel.statusMessage)
+                } label: {
+                    Label("保存 AI Key", systemImage: "key")
+                }
+                .buttonStyle(NeutralButtonStyle())
+
+                Text("一笺成文会把今日记录直接发送给你配置的 AI 服务；一日一笺没有自有服务器。")
+                    .font(.caption2)
+                    .foregroundStyle(Palette.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding(18)
-        .frame(width: 300)
+        .frame(width: 320)
         .background(Palette.background)
         .themedWindow(theme.colorScheme)
     }
@@ -432,7 +516,7 @@ private struct AboutView: View {
                 Label("隐私为先 · 本地为先", systemImage: "lock.shield")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Palette.accentText)
-                Text("你的所有记录只保存在这台电脑上：不上传、不联网、不做云同步，也不会被拿去分析。一日一笺只是一个属于你自己的本地日记夹。")
+                Text("默认情况下，所有记录只保存在这台电脑上。启用 AI 后，只有在你主动点击「一笺成文」时，应用才会把今日记录直接发送给你配置的 AI 服务。一日一笺没有自有服务器，不收集、不保存、不转发你的记录与日记结果。")
                     .font(.callout)
                     .foregroundStyle(Palette.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)

@@ -2,9 +2,17 @@ import Foundation
 
 public struct DayleafSettings: Codable, Equatable, Sendable {
     public var exportDirectoryPath: String?
+    public var aiBaseURL: String?
+    public var aiModel: String?
 
-    public init(exportDirectoryPath: String? = nil) {
+    public init(
+        exportDirectoryPath: String? = nil,
+        aiBaseURL: String? = nil,
+        aiModel: String? = nil
+    ) {
         self.exportDirectoryPath = exportDirectoryPath?.nilIfBlank
+        self.aiBaseURL = aiBaseURL?.nilIfBlank
+        self.aiModel = aiModel?.nilIfBlank
     }
 
     public func resolvedExportDirectoryURL(fileManager: FileManager = .default) -> URL {

@@ -134,6 +134,7 @@ extension View {
         .overlay {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
                 .strokeBorder(Palette.tileBorder, lineWidth: DS.hairline)
+                .allowsHitTesting(false)
         }
     }
 }
@@ -184,6 +185,7 @@ struct SoftFieldBackground: ViewModifier {
                         focused ? activeColor.opacity(0.9) : Palette.tileBorder,
                         lineWidth: focused ? 1 : DS.hairline
                     )
+                    .allowsHitTesting(false)
             }
     }
 }
@@ -315,7 +317,9 @@ struct ToastView: View {
             Capsule(style: .continuous).fill(Palette.control)
         }
         .overlay {
-            Capsule(style: .continuous).strokeBorder(Palette.tileBorder, lineWidth: DS.hairline)
+            Capsule(style: .continuous)
+                .strokeBorder(Palette.tileBorder, lineWidth: DS.hairline)
+                .allowsHitTesting(false)
         }
         .shadow(color: .black.opacity(0.3), radius: 12, y: 4)
     }

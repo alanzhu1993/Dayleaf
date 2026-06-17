@@ -1,0 +1,141 @@
+import AppKit
+import SwiftUI
+
+/// 日记正文长文编辑器。SwiftUI TextEditor 在菜单栏 App 打开的独立窗口里偶尔无法稳定获得焦点；
+/// 这里直接使用 NSTextView，明确开启可编辑、可选择和撤销。
+struct JournalBodyEditor: NSViewRepresentable {
+    @Binding var text: String
+    var onFocusChange: (Bool) -> Void = { _ in }
+    var onKeyEvent: (String) -> Void = { _ in }
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let textView = JournalTextView()
+        textView.onKeyEvent = { message in
+            context.coordinator.parent.onKeyEvent(message)
+        }
+        textView.delegate = context.coordinator
+        textView.string = text
+        textView.isEditable = true
+        textView.isSelectable = true
+        textView.isRichText = false
+        textView.allowsUndo = true
+        textView.importsGraphics = false
+        textView.drawsBackground = false
+        textView.textColor = .labelColor
+        textView.insertionPointColor = .controlAccentColor
+        textView.font = NSFont.preferredFont(forTextStyle: .body)
+        textView.textContainerInset = NSSize(width: 8, height: 8)
+        textView.textContainer?.lineFragmentPadding = 0
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        textView.minSize = NSSize(width: 0, height: 0)
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        textView.frame = NSRect(x: 0, y: 0, width: 560, height: 320)
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(
+            width: textView.frame.width,
+            height: CGFloat.greatestFiniteMagnitude
+        )
+
+        let scrollView = NSScrollView()
+        scrollView.documentView = textView
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.borderType = .noBorder
+        scrollView.autohidesScrollers = true
+        scrollView.postsFrameChangedNotifications = true
+        return scrollView
+    }
+
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        context.coordinator.parent = self
+        guard let textView = scrollView.documentView as? NSTextView else { return }
+        textView.isEditable = true
+        textView.isSelectable = true
+        if textView.hasMarkedText() { return }
+        if textView.window?.firstResponder === textView { return }
+        if textView.string != text {
+            let selectedRange = textView.selectedRange()
+            textView.string = text
+            textView.setSelectedRange(NSRange(location: min(selectedRange.location, textView.string.count), length: 0))
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    final class Coordinator: NSObject, NSTextViewDelegate {
+        var parent: JournalBodyEditor
+
+        init(_ parent: JournalBodyEditor) {
+            self.parent = parent
+        }
+
+        func textDidChange(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            parent.text = textView.string
+        }
+
+        func textDidBeginEditing(_ notification: Notification) {
+            parent.onFocusChange(true)
+        }
+
+        func textDidEndEditing(_ notification: Notification) {
+            parent.onFocusChange(false)
+        }
+    }
+}
+
+private final class JournalTextView: NSTextView {
+    var onKeyEvent: (String) -> Void = { _ in }
+
+    override var acceptsFirstResponder: Bool {
+        true
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.window else { return }
+            window.makeKeyAndOrderFront(nil)
+            window.makeFirstResponder(self)
+        }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        window?.makeKeyAndOrderFront(nil)
+        window?.makeFirstResponder(self)
+        super.mouseDown(with: event)
+    }
+
+    override func keyDown(with event: NSEvent) {
+        window?.makeKeyAndOrderFront(nil)
+        window?.makeFirstResponder(self)
+        onKeyEvent("正文已收到按键：\(event.charactersIgnoringModifiers ?? "")")
+
+        if event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.command) {
+            super.keyDown(with: event)
+            return
+        }
+
+        switch event.charactersIgnoringModifiers {
+        case "\u{7F}":
+            deleteBackward(nil)
+        case "\u{08}":
+            deleteBackward(nil)
+        case "\r":
+            insertNewline(nil)
+        case "\t":
+            insertTab(nil)
+        default:
+            if let characters = event.characters, characters.isEmpty == false {
+                insertText(characters, replacementRange: selectedRange())
+            } else {
+                super.keyDown(with: event)
+            }
+        }
+    }
+}

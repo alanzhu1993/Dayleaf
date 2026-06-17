@@ -162,13 +162,73 @@ public enum DayEntry: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
+public struct DailyJournal: Codable, Equatable, Identifiable, Sendable {
+    public var id: UUID
+    public var date: Date
+    public var title: String
+    public var content: String
+    public var sourceEntryIDs: [UUID]
+    public var generatedAt: Date
+    public var updatedAt: Date
+    public var editedByUser: Bool
+    public var modelName: String
+
+    public init(
+        id: UUID = UUID(),
+        date: Date,
+        title: String,
+        content: String,
+        sourceEntryIDs: [UUID],
+        generatedAt: Date,
+        updatedAt: Date? = nil,
+        editedByUser: Bool = false,
+        modelName: String
+    ) {
+        self.id = id
+        self.date = date
+        self.title = title
+        self.content = content
+        self.sourceEntryIDs = sourceEntryIDs
+        self.generatedAt = generatedAt
+        self.updatedAt = updatedAt ?? generatedAt
+        self.editedByUser = editedByUser
+        self.modelName = modelName
+    }
+}
+
 public struct DayleafDatabase: Codable, Equatable, Sendable {
     public var focusSessions: [FocusSession]
     public var quickNotes: [QuickNote]
+    public var journals: [DailyJournal]
 
-    public init(focusSessions: [FocusSession] = [], quickNotes: [QuickNote] = []) {
+    private enum CodingKeys: String, CodingKey {
+        case focusSessions
+        case quickNotes
+        case journals
+    }
+
+    public init(
+        focusSessions: [FocusSession] = [],
+        quickNotes: [QuickNote] = [],
+        journals: [DailyJournal] = []
+    ) {
         self.focusSessions = focusSessions
         self.quickNotes = quickNotes
+        self.journals = journals
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.focusSessions = try container.decodeIfPresent([FocusSession].self, forKey: .focusSessions) ?? []
+        self.quickNotes = try container.decodeIfPresent([QuickNote].self, forKey: .quickNotes) ?? []
+        self.journals = try container.decodeIfPresent([DailyJournal].self, forKey: .journals) ?? []
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(focusSessions, forKey: .focusSessions)
+        try container.encode(quickNotes, forKey: .quickNotes)
+        try container.encode(journals, forKey: .journals)
     }
 
     public func entries(on date: Date, calendar: Calendar = .current) -> [DayEntry] {
@@ -186,9 +246,25 @@ public struct DayleafDatabase: Codable, Equatable, Sendable {
             return left.occurredAt < right.occurredAt
         }
     }
+
+    public func journal(on date: Date, calendar: Calendar = .current) -> DailyJournal? {
+        journals
+            .filter { calendar.isDate($0.date, inSameDayAs: date) }
+            .sorted { $0.updatedAt > $1.updatedAt }
+            .first
+    }
+
+    public var journalsNewestFirst: [DailyJournal] {
+        journals.sorted { left, right in
+            if left.date == right.date {
+                return left.updatedAt > right.updatedAt
+            }
+            return left.date > right.date
+        }
+    }
 }
 
-extension String {
+public extension String {
     var nilIfBlank: String? {
         let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed

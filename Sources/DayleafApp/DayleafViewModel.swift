@@ -10,22 +10,38 @@ final class DayleafViewModel: ObservableObject {
     @Published var plannedActivityDraft = ""
     @Published var quickNoteDraft = ""
     @Published var finishActivityDraft = ""
+    @Published var aiBaseURLDraft = ""
+    @Published var aiModelDraft = ""
+    @Published var aiAPIKeyDraft = ""
+    @Published private(set) var hasStoredAPIKey = false
+    @Published private(set) var isGeneratingJournal = false
+    @Published var selectedJournalID: UUID?
+    @Published var journalEditorStatus: String?
     @Published var statusMessage: String?
     @Published var now = Date()
 
     private let store: JSONDayleafStore
     private let exporter: MarkdownExporter
     private let pdfExporter: PDFDailyExporter
+    private let promptBuilder: JournalPromptBuilder
+    private let aiClient: OpenAICompatibleClient
+    private let apiKeyStore: APIKeyStore
     private var timer: Timer?
 
     init(
         store: JSONDayleafStore = .live(),
         exporter: MarkdownExporter = MarkdownExporter(),
-        pdfExporter: PDFDailyExporter = PDFDailyExporter()
+        pdfExporter: PDFDailyExporter = PDFDailyExporter(),
+        promptBuilder: JournalPromptBuilder = JournalPromptBuilder(),
+        aiClient: OpenAICompatibleClient = OpenAICompatibleClient(),
+        apiKeyStore: APIKeyStore = APIKeyStore()
     ) {
         self.store = store
         self.exporter = exporter
         self.pdfExporter = pdfExporter
+        self.promptBuilder = promptBuilder
+        self.aiClient = aiClient
+        self.apiKeyStore = apiKeyStore
         load()
         startTicker()
     }
@@ -71,6 +87,36 @@ final class DayleafViewModel: ObservableObject {
 
     var exportDirectoryDisplay: String {
         settings.resolvedExportDirectoryURL().path
+    }
+
+    var journalsNewestFirst: [DailyJournal] {
+        database.journalsNewestFirst
+    }
+
+    var selectedJournal: DailyJournal? {
+        if let selectedJournalID,
+           let journal = database.journals.first(where: { $0.id == selectedJournalID }) {
+            return journal
+        }
+        return journalsNewestFirst.first
+    }
+
+    var todayJournal: DailyJournal? {
+        database.journal(on: now)
+    }
+
+    var aiConfigurationMessage: String? {
+        if settings.aiBaseURL?.nilIfBlank == nil || settings.aiModel?.nilIfBlank == nil {
+            return "请先填写 AI Base URL 和 Model。"
+        }
+        if hasStoredAPIKey == false {
+            return "请先保存 AI Key。"
+        }
+        return nil
+    }
+
+    var isAIConfigured: Bool {
+        aiConfigurationMessage == nil
     }
 
     @discardableResult
@@ -245,6 +291,142 @@ final class DayleafViewModel: ObservableObject {
         }
     }
 
+    func saveAISettings() {
+        settings.aiBaseURL = aiBaseURLDraft.nilIfBlank
+        settings.aiModel = aiModelDraft.nilIfBlank
+        saveSettings()
+        statusMessage = "AI 设置已保存。"
+    }
+
+    func saveAIAPIKey() {
+        let key = aiAPIKeyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        do {
+            if key.isEmpty {
+                try apiKeyStore.deleteKey()
+                hasStoredAPIKey = false
+                statusMessage = "AI Key 已清空。"
+            } else {
+                try apiKeyStore.saveKey(key)
+                hasStoredAPIKey = true
+                aiAPIKeyDraft = ""
+                statusMessage = "AI Key 已保存到 Keychain。"
+            }
+        } catch {
+            statusMessage = "保存 AI Key 失败：\(error.localizedDescription)"
+        }
+    }
+
+    @discardableResult
+    func generateJournalForToday() -> Bool {
+        guard isGeneratingJournal == false else {
+            return true
+        }
+        guard settings.aiBaseURL?.nilIfBlank != nil, settings.aiModel?.nilIfBlank != nil else {
+            statusMessage = "请先填写 AI Base URL 和 Model。"
+            return false
+        }
+
+        let exportDatabase = databaseWithRefreshedActiveDuration()
+        guard let prompt = promptBuilder.prompt(for: now, database: exportDatabase, generatedAt: now) else {
+            statusMessage = "今天还没有可成文的记录。"
+            return false
+        }
+        if let existing = exportDatabase.journal(on: now), existing.editedByUser {
+            statusMessage = "这篇日记已手动编辑，暂不直接覆盖。"
+            selectedJournalID = existing.id
+            return true
+        }
+
+        let apiKey: String
+        do {
+            guard let loadedKey = try apiKeyStore.loadKey()?.nilIfBlank else {
+                hasStoredAPIKey = false
+                statusMessage = "请先保存 AI Key。"
+                return false
+            }
+            apiKey = loadedKey
+            hasStoredAPIKey = true
+        } catch {
+            statusMessage = "读取 AI Key 失败：\(error.localizedDescription)"
+            return false
+        }
+
+        isGeneratingJournal = true
+        statusMessage = "正在一笺成文…"
+
+        Task {
+            do {
+                let content = try await aiClient.generateJournal(settings: settings, apiKey: apiKey, prompt: prompt)
+                await MainActor.run {
+                    self.upsertGeneratedJournal(content: content, sourceEntryIDs: prompt.sourceEntryIDs)
+                    self.isGeneratingJournal = false
+                    self.statusMessage = "今日一笺已生成。"
+                }
+            } catch {
+                await MainActor.run {
+                    self.isGeneratingJournal = false
+                    self.statusMessage = "一笺成文失败：\(error.localizedDescription)"
+                }
+            }
+        }
+        return true
+    }
+
+    func refreshAPIKeyStatus() {
+        do {
+            hasStoredAPIKey = (try apiKeyStore.loadKey()?.nilIfBlank) != nil
+        } catch {
+            statusMessage = "读取 AI Key 失败：\(error.localizedDescription)"
+        }
+    }
+
+    func selectJournal(_ journal: DailyJournal) {
+        selectedJournalID = journal.id
+    }
+
+    @discardableResult
+    func updateJournal(_ journal: DailyJournal, title: String, content: String) -> Bool {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedTitle.isEmpty == false, trimmedContent.isEmpty == false else {
+            statusMessage = "日记标题和正文不能为空。"
+            return false
+        }
+
+        mutateDatabase { database in
+            if let index = database.journals.firstIndex(where: { $0.id == journal.id }) {
+                database.journals[index].title = trimmedTitle
+                database.journals[index].content = trimmedContent
+                database.journals[index].editedByUser = true
+                database.journals[index].updatedAt = Date()
+            }
+        }
+        selectedJournalID = journal.id
+        statusMessage = "日记已保存。"
+        return true
+    }
+
+    func deleteJournal(_ journal: DailyJournal) {
+        mutateDatabase { database in
+            database.journals.removeAll { $0.id == journal.id }
+        }
+        selectedJournalID = journalsNewestFirst.first?.id
+        statusMessage = "日记已删除。"
+    }
+
+    func exportJournalPDF(_ journal: DailyJournal) {
+        do {
+            let result = try pdfExporter.export(journal: journal, settings: settings)
+            statusMessage = "日记 PDF 已保存：\(result.fileURL.path)"
+        } catch {
+            statusMessage = "日记 PDF 保存失败：\(error.localizedDescription)"
+        }
+    }
+
+    func updateJournalEditorStatus(_ message: String) {
+        journalEditorStatus = message
+    }
+
     func saveTodayPDF() {
         do {
             let exportDatabase = databaseWithRefreshedActiveDuration()
@@ -302,6 +484,10 @@ final class DayleafViewModel: ObservableObject {
         do {
             database = try store.loadDatabase()
             settings = try store.loadSettings()
+            aiBaseURLDraft = settings.aiBaseURL ?? "https://api.openai.com/v1"
+            aiModelDraft = settings.aiModel ?? ""
+            hasStoredAPIKey = (try apiKeyStore.loadKey()?.nilIfBlank) != nil
+            selectedJournalID = database.journalsNewestFirst.first?.id
         } catch {
             statusMessage = "读取本地数据失败：\(error.localizedDescription)"
         }
@@ -328,6 +514,37 @@ final class DayleafViewModel: ObservableObject {
         mutation(&nextDatabase)
         database = nextDatabase
         saveDatabase()
+    }
+
+    private func upsertGeneratedJournal(content: String, sourceEntryIDs: [UUID]) {
+        let generatedAt = Date()
+        let day = Calendar.current.startOfDay(for: now)
+        let title = "\(Self.dateTitle(day)) 今日一笺"
+        let modelName = settings.aiModel ?? ""
+
+        mutateDatabase { database in
+            if let index = database.journals.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: day) }) {
+                database.journals[index].title = title
+                database.journals[index].content = content
+                database.journals[index].sourceEntryIDs = sourceEntryIDs
+                database.journals[index].generatedAt = generatedAt
+                database.journals[index].updatedAt = generatedAt
+                database.journals[index].editedByUser = false
+                database.journals[index].modelName = modelName
+                selectedJournalID = database.journals[index].id
+            } else {
+                let journal = DailyJournal(
+                    date: day,
+                    title: title,
+                    content: content,
+                    sourceEntryIDs: sourceEntryIDs,
+                    generatedAt: generatedAt,
+                    modelName: modelName
+                )
+                database.journals.append(journal)
+                selectedJournalID = journal.id
+            }
+        }
     }
 
     private func databaseWithRefreshedActiveDuration() -> DayleafDatabase {
@@ -358,5 +575,12 @@ final class DayleafViewModel: ObservableObject {
             return "\(hours)h"
         }
         return "\(hours)h \(minutes)\(minutes == 1 ? "min" : "mins")"
+    }
+
+    private static func dateTitle(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
     }
 }

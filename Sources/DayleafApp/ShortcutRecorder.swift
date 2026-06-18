@@ -75,16 +75,27 @@ final class RecorderButton: NSButton {
             modifiers: modifiers
         )
         shortcut = nextShortcut
-        isRecording = false
-        refreshTitle()
-        window?.makeFirstResponder(nil)
+        stopRecording(clearFirstResponder: true)
         onChange?(nextShortcut)
     }
 
     override func cancelOperation(_ sender: Any?) {
+        stopRecording(clearFirstResponder: true)
+    }
+
+    override func resignFirstResponder() -> Bool {
+        if isRecording {
+            stopRecording(clearFirstResponder: false)
+        }
+        return super.resignFirstResponder()
+    }
+
+    private func stopRecording(clearFirstResponder: Bool) {
         isRecording = false
         refreshTitle()
-        window?.makeFirstResponder(nil)
+        if clearFirstResponder {
+            window?.makeFirstResponder(nil)
+        }
     }
 
     @objc

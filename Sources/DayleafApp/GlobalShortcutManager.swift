@@ -121,12 +121,8 @@ final class GlobalShortcutManager: ObservableObject {
             return noErr
         }
 
-        let address = UInt(bitPattern: userData)
-        Task { @MainActor in
-            guard let pointer = UnsafeRawPointer(bitPattern: address) else {
-                return
-            }
-            let box = Unmanaged<GlobalShortcutHandlerBox>.fromOpaque(pointer).takeUnretainedValue()
+        let box = Unmanaged<GlobalShortcutHandlerBox>.fromOpaque(userData).takeUnretainedValue()
+        Task { @MainActor [box] in
             box.trigger()
         }
 
@@ -158,7 +154,7 @@ final class GlobalShortcutManager: ObservableObject {
     }
 }
 
-private final class GlobalShortcutHandlerBox {
+private final class GlobalShortcutHandlerBox: @unchecked Sendable {
     private let onTrigger: () -> Void
 
     init(onTrigger: @escaping () -> Void) {

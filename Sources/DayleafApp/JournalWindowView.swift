@@ -7,6 +7,7 @@ struct JournalWindowView: View {
 
     @State private var titleDraft = ""
     @State private var contentDraft = ""
+    @State private var draftRefreshToken = 0
     @State private var confirmingDelete = false
     @FocusState private var contentEditorFocused: Bool
 
@@ -110,7 +111,7 @@ struct JournalWindowView: View {
 
                 JournalBodyEditor(
                     text: $contentDraft,
-                    journalID: journal.id,
+                    refreshToken: draftRefreshToken,
                     onFocusChange: { contentEditorFocused = $0 }
                 )
                     .padding(4)
@@ -226,6 +227,7 @@ struct JournalWindowView: View {
     private func syncDrafts() {
         titleDraft = viewModel.selectedJournal?.title ?? ""
         contentDraft = viewModel.selectedJournal?.content ?? ""
+        draftRefreshToken += 1
     }
 
     private func hasUnsavedChanges(for journal: DailyJournal) -> Bool {

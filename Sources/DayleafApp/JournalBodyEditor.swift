@@ -5,7 +5,7 @@ import SwiftUI
 /// 这里直接使用 NSTextView，明确开启可编辑、可选择和撤销。
 struct JournalBodyEditor: NSViewRepresentable {
     @Binding var text: String
-    var journalID: UUID?
+    var refreshToken = 0
     var onFocusChange: (Bool) -> Void = { _ in }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -51,14 +51,14 @@ struct JournalBodyEditor: NSViewRepresentable {
         guard let textView = scrollView.documentView as? NSTextView else { return }
         textView.isEditable = true
         textView.isSelectable = true
-        let journalChanged = context.coordinator.lastJournalID != journalID
-        context.coordinator.lastJournalID = journalID
-        if textView.hasMarkedText(), journalChanged == false { return }
-        if textView.window?.firstResponder === textView, journalChanged == false { return }
+        let shouldForceRefresh = context.coordinator.lastRefreshToken != refreshToken
+        context.coordinator.lastRefreshToken = refreshToken
+        if textView.hasMarkedText(), shouldForceRefresh == false { return }
+        if textView.window?.firstResponder === textView, shouldForceRefresh == false { return }
         if textView.string != text {
             let selectedRange = textView.selectedRange()
             textView.string = text
-            let location = journalChanged ? 0 : min(selectedRange.location, textView.string.count)
+            let location = shouldForceRefresh ? 0 : min(selectedRange.location, textView.string.count)
             textView.setSelectedRange(NSRange(location: location, length: 0))
         }
     }
@@ -69,11 +69,11 @@ struct JournalBodyEditor: NSViewRepresentable {
 
     final class Coordinator: NSObject, NSTextViewDelegate {
         var parent: JournalBodyEditor
-        var lastJournalID: UUID?
+        var lastRefreshToken: Int
 
         init(_ parent: JournalBodyEditor) {
             self.parent = parent
-            self.lastJournalID = parent.journalID
+            self.lastRefreshToken = parent.refreshToken
         }
 
         func textDidChange(_ notification: Notification) {

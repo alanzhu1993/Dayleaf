@@ -1,94 +1,94 @@
-# Global Quick Capture Design - 2026-06-18
+# 全局快速记录设计 - 2026-06-18
 
-## Goal
+## 目标
 
-Add a global quick-capture path for Dayleaf so users can record a thought without opening the full menu bar surface.
+为一日一笺增加一条全局快速记录路径，让用户不用打开完整菜单栏主界面，也能马上记下一句话。
 
-The intended path is:
+目标路径：
 
 ```text
-Global shortcut -> quick capture window opens -> input is focused -> user types -> Return saves -> window closes
+全局快捷键 -> 快速记录浮窗弹出 -> 输入框自动聚焦 -> 用户输入 -> Return 保存 -> 浮窗关闭
 ```
 
-This feature exists to support fast recording. It is not a second main window and must not include focus sessions, timeline, AI generation, export, or settings.
+这个功能只服务于快速记录。它不是第二个主界面，不能包含专注、时间线、AI 成文、导出或设置。
 
-## User Experience
+## 用户体验
 
-The user presses the configured global shortcut from anywhere on macOS. Dayleaf shows a small floating quick-capture window with the text cursor already inside the input field.
+用户在 macOS 任意位置按下已配置的全局快捷键。一日一笺弹出一个小的快速记录浮窗，文字光标已经在输入框里。
 
-The window contains only the capture input and minimal state feedback. The user types a note and presses `Return`. Dayleaf saves the note as a normal quick note for the current day, then closes the window immediately.
+浮窗只包含记录输入框和极轻的状态提示。用户输入一条记录后按 `Return`。一日一笺把它保存为当天的一条普通快速记录，然后立刻关闭浮窗。
 
-Keyboard behavior:
+键盘行为：
 
-- `Return`: save non-empty text and close the window.
-- `Shift + Return`: insert a newline.
-- `Escape`: close the window without saving.
-- Empty `Return`: do not save and keep the window open with a readable hint.
-- Save failure: keep the window open and show the error.
+- `Return`：保存非空内容，并关闭浮窗。
+- `Shift + Return`：插入换行。
+- `Escape`：关闭浮窗，不保存。
+- 空内容时按 `Return`：不保存，浮窗保持打开，并显示可读提示。
+- 保存失败：浮窗保持打开，并显示错误。
 
-After a successful save, the user should return to the previous working context with no extra confirmation step.
+成功保存后，用户不需要再确认，应该直接回到原来的工作上下文。
 
-## Scope
+## 范围
 
-In scope:
+本次包含：
 
-- A global shortcut for quick capture.
-- A small quick-capture window separate from the menu bar popover.
-- Automatic input focus when the window opens.
-- Immediate close after successful save.
-- User-editable shortcut configuration in settings.
-- Local persistence through the existing quick-note data path.
+- 一个用于快速记录的全局快捷键。
+- 一个独立于菜单栏弹窗的小型快速记录浮窗。
+- 浮窗打开后自动聚焦输入框。
+- 保存成功后立刻关闭浮窗。
+- 用户可以在设置里修改快捷键。
+- 通过现有快速记录数据路径保存到本地。
 
-Out of scope:
+本次不包含：
 
-- Focus-session controls in the quick-capture window.
-- Timeline or history in the quick-capture window.
-- AI actions in the quick-capture window.
-- Tags, projects, categories, or customer fields.
-- Multiple global shortcuts.
-- Automatic screen, app, browser, keyboard, or clipboard monitoring.
+- 快速记录浮窗里的专注控制。
+- 快速记录浮窗里的时间线或历史记录。
+- 快速记录浮窗里的 AI 操作。
+- 标签、项目、分类或客户字段。
+- 多个全局快捷键。
+- 自动监控屏幕、应用、浏览器、键盘或剪贴板。
 
-## Default Shortcut
+## 默认快捷键
 
-The app should ship with a default quick-capture shortcut. The recommended default is:
+应用需要提供一个默认快速记录快捷键。推荐默认值：
 
 ```text
 Control + Option + Space
 ```
 
-The default is only a starting point. Users must be able to change it from settings because global shortcuts can conflict with macOS, input methods, launchers, or other productivity tools.
+默认快捷键只是初始值。因为全局快捷键可能和 macOS、输入法、启动器或其他效率工具冲突，所以用户必须能在设置里修改。
 
-If the default shortcut cannot be registered, the app should keep running and show a clear warning in settings.
+如果默认快捷键注册失败，应用仍然正常运行，并在设置里给出清楚提示。
 
-## Architecture
+## 架构
 
 ### `GlobalShortcutManager`
 
-Add an app-side manager responsible for registering, unregistering, and re-registering the configured global shortcut.
+新增一个 App 侧管理器，负责注册、取消注册和重新注册全局快捷键。
 
-Responsibilities:
+职责：
 
-- Load the configured shortcut from `DayleafSettings`.
-- Register the shortcut at app startup.
-- Trigger a callback when the shortcut is pressed.
-- Re-register when the user changes the shortcut.
-- Report registration failure so the UI can explain that the shortcut may be occupied.
+- 从 `DayleafSettings` 读取已配置快捷键。
+- 应用启动时注册快捷键。
+- 快捷键被按下时触发回调。
+- 用户修改快捷键后重新注册。
+- 把注册失败状态暴露给 UI，让界面能解释该快捷键可能已被占用。
 
-The manager should register only the chosen key combination. It must not use broad keyboard event monitoring or record arbitrary keystrokes.
+这个管理器只注册用户选择的那一个组合键。不能使用宽泛的键盘事件监听，也不能记录任意键盘输入。
 
 ### `ShortcutRecorder`
 
-Add a small settings control for recording a replacement shortcut.
+新增一个设置控件，用于录入替代快捷键。
 
-Responsibilities:
+职责：
 
-- Enter a recording state when the user clicks the shortcut row.
-- Capture a complete key combination.
-- Reject plain character keys without meaningful modifiers.
-- Persist the accepted shortcut to local settings.
-- Ask `GlobalShortcutManager` to re-register it.
+- 用户点击快捷键设置行后进入录入状态。
+- 捕捉完整的快捷键组合。
+- 拒绝没有有效修饰键的普通字符键。
+- 把可接受的快捷键保存到本地设置。
+- 通知 `GlobalShortcutManager` 重新注册。
 
-The settings copy should be direct and user-facing, for example:
+设置里的用户文案要直接，例如：
 
 ```text
 快速记录快捷键
@@ -96,105 +96,105 @@ The settings copy should be direct and user-facing, for example:
 
 ### `QuickCaptureWindowPresenter`
 
-Add an app-side presenter for the quick-capture window.
+新增一个 App 侧 presenter，用于管理快速记录浮窗。
 
-Responsibilities:
+职责：
 
-- Create the window on first use.
-- Reuse the existing window while it is open.
-- Bring the window to the front when the global shortcut is pressed.
-- Place the window centered on the screen that currently contains the cursor.
-- Ensure the text input becomes first responder after the window appears.
-- Close the window after a successful save or `Escape`.
+- 第一次使用时创建浮窗。
+- 浮窗已经打开时复用现有窗口。
+- 全局快捷键触发时把浮窗带到前台。
+- 把浮窗放在当前鼠标所在屏幕的中央。
+- 浮窗显示后确保文本输入框成为 first responder。
+- 保存成功或按下 `Escape` 后关闭浮窗。
 
-The window should be lightweight and visually consistent with the existing app: native macOS feel, compact size, no decorative layout.
+浮窗应该轻量，并和现有应用视觉保持一致：macOS 原生感、紧凑、不做装饰性布局。
 
 ### `QuickCaptureWindowView`
 
-Add a SwiftUI view for the capture surface.
+新增一个 SwiftUI 视图，作为快速记录输入界面。
 
-Responsibilities:
+职责：
 
-- Render only the input field and minimal status text.
-- Reuse `QuickNoteEditor` for input editing so `Return`, `Shift + Return`, text binding, and IME behavior stay consistent with the menu bar quick-note field.
-- Save by calling a view-model method that accepts explicit text.
-- Clear draft text after successful save.
-- Keep the window open on empty input or save errors.
+- 只渲染输入框和极少量状态文字。
+- 复用 `QuickNoteEditor` 作为输入控件，让 `Return`、`Shift + Return`、文本绑定和输入法行为与菜单栏快速记录保持一致。
+- 通过接收明确文本的 view model 方法保存记录。
+- 保存成功后清空草稿。
+- 空内容或保存失败时保持浮窗打开。
 
 ### `DayleafViewModel`
 
-Add a lower-level quick-note save method that takes explicit content:
+新增一个更底层的快速记录保存方法，接收明确内容：
 
 ```swift
 func addQuickNote(content: String) -> Bool
 ```
 
-The existing menu bar quick-note path can continue using `quickNoteDraft`, but both the menu bar and quick-capture window should share the same validation and persistence behavior.
+现有菜单栏快速记录路径可以继续使用 `quickNoteDraft`。但菜单栏快速记录和快速记录浮窗必须共享同一套校验和持久化逻辑。
 
 ### `DayleafSettings`
 
-Add a setting for the quick-capture shortcut. It should be Codable and safe for existing users with older settings files.
+为快速记录快捷键新增一个设置字段。它需要支持 Codable，并且不能破坏老用户已有的 settings 文件。
 
-Add this setting shape:
+字段形态：
 
 ```swift
 public var quickCaptureShortcut: KeyboardShortcutSpec?
 ```
 
-If the setting is missing, the app uses the default shortcut.
+如果这个字段不存在，应用使用默认快捷键。
 
-## Data Flow
+## 数据流
 
-1. App starts and loads settings.
-2. `GlobalShortcutManager` registers the configured shortcut.
-3. User presses the shortcut.
-4. Manager calls the app callback.
-5. `QuickCaptureWindowPresenter` shows the quick-capture window and focuses input.
-6. User types text.
-7. User presses `Return`.
-8. `QuickCaptureWindowView` calls `DayleafViewModel.addQuickNote(content:)`.
-9. View model saves a normal quick-note record to the existing local JSON store.
-10. On success, the presenter closes the window.
+1. 应用启动并读取设置。
+2. `GlobalShortcutManager` 注册已配置快捷键。
+3. 用户按下快捷键。
+4. Manager 调用 App 回调。
+5. `QuickCaptureWindowPresenter` 显示快速记录浮窗，并聚焦输入框。
+6. 用户输入文字。
+7. 用户按 `Return`。
+8. `QuickCaptureWindowView` 调用 `DayleafViewModel.addQuickNote(content:)`。
+9. View model 把它保存为一条普通快速记录，写入现有本地 JSON 存储。
+10. 保存成功后，presenter 关闭浮窗。
 
-No network request is involved. No data leaves the device.
+这个流程不涉及网络请求。数据不会离开本机。
 
-## Error Handling
+## 错误处理
 
-- Shortcut registration failure: keep the app usable, show a settings warning, and let the user choose another shortcut.
-- Empty note: do not save; keep focus in the input field.
-- Save failure: keep the typed text, show the error, and keep the window open.
-- Shortcut changed to an invalid combination: reject it before saving.
-- Shortcut pressed while the quick-capture window is already open: bring the existing window forward and keep the current draft.
+- 快捷键注册失败：应用继续可用，在设置里提示用户，并允许用户选择其他快捷键。
+- 空记录：不保存，输入框继续保持焦点。
+- 保存失败：保留已输入文本，显示错误，并保持浮窗打开。
+- 用户录入无效快捷键：保存前直接拒绝。
+- 快捷键触发时快速记录浮窗已经打开：把现有浮窗带到前台，并保留当前草稿。
 
-## Testing
+## 测试
 
-Automated checks:
+自动检查：
 
-- `swift build` passes.
-- `swift run DayleafCoreCheck` passes.
-- Core shortcut spec parsing or Codable behavior is covered by `DayleafCoreCheck` if implemented in `DayleafCore`.
-- `DayleafViewModel.addQuickNote(content:)` shares validation with the existing quick-note flow.
+- `swift build` 通过。
+- `swift run DayleafCoreCheck` 通过。
+- 如果快捷键规格解析或 Codable 行为放在 `DayleafCore`，需要纳入 `DayleafCoreCheck`。
+- `DayleafViewModel.addQuickNote(content:)` 和现有快速记录流程共享校验逻辑。
 
-Manual macOS checks:
+macOS 手动检查：
 
-- Launch the app and confirm the configured global shortcut opens the quick-capture window.
-- Confirm the input is focused immediately.
-- Type text and press `Return`; confirm the note is saved and the window closes.
-- Press `Shift + Return`; confirm a newline is inserted.
-- Press `Escape`; confirm the window closes without saving.
-- Press `Return` on empty input; confirm nothing is saved and the window remains open.
-- Change the shortcut in settings; confirm the old shortcut stops working and the new shortcut works.
-- Try an occupied shortcut; confirm the app shows a clear warning instead of failing silently.
-- Confirm the menu bar quick-note path still works.
+- 启动应用，确认已配置的全局快捷键能打开快速记录浮窗。
+- 确认浮窗打开后输入框立即聚焦。
+- 输入文字并按 `Return`，确认记录被保存，且浮窗关闭。
+- 按 `Shift + Return`，确认插入换行。
+- 按 `Escape`，确认浮窗关闭且不保存。
+- 空内容时按 `Return`，确认没有保存，且浮窗保持打开。
+- 在设置中修改快捷键，确认旧快捷键失效，新快捷键生效。
+- 尝试使用已被占用的快捷键，确认应用显示清楚提示，而不是静默失败。
+- 确认菜单栏里的快速记录路径仍然可用。
 
-## Acceptance Criteria
+## 验收标准
 
-- A global shortcut opens a quick-capture-only window.
-- The quick-capture input is focused as soon as the window opens.
-- `Return` saves a non-empty quick note and immediately closes the window.
-- `Shift + Return` creates a newline.
-- `Escape` cancels without saving.
-- The quick-capture note appears in the normal Dayleaf timeline.
-- Users can change the quick-capture shortcut in settings.
-- Shortcut registration conflicts are visible to the user.
-- The feature does not add cloud sync, monitoring, AI behavior, focus controls, or timeline controls to the quick-capture window.
+- 全局快捷键能打开一个只用于快速记录的浮窗。
+- 快速记录浮窗打开后，输入框立即获得焦点。
+- `Return` 能保存非空快速记录，并立刻关闭浮窗。
+- `Shift + Return` 能插入换行。
+- `Escape` 能取消并关闭浮窗，不保存。
+- 快速记录浮窗保存的内容会出现在正常的一日一笺时间线里。
+- 用户可以在设置里修改快速记录快捷键。
+- 快捷键注册冲突对用户可见。
+- 这个功能不会在快速记录浮窗里加入云同步、监控、AI、专注控制或时间线控制。

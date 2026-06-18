@@ -250,8 +250,9 @@ struct MenuBarRootView: View {
                                 entry: entry,
                                 now: viewModel.now,
                                 onSave: {
-                                    viewModel.updateEntryText(entry, to: $0)
+                                    let saved = viewModel.updateEntryText(entry, to: $0)
                                     presentToast(viewModel.statusMessage)
+                                    return saved
                                 },
                                 onDelete: {
                                     viewModel.deleteEntry(entry)
@@ -544,7 +545,7 @@ private enum FocusedField: Hashable {
 private struct TimelineRow: View {
     let entry: DayEntry
     let now: Date
-    let onSave: (String) -> Void
+    let onSave: (String) -> Bool
     let onDelete: () -> Void
 
     @State private var isEditing = false
@@ -683,8 +684,9 @@ private struct TimelineRow: View {
     private func commitEdit() {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard text.isEmpty == false else { return }
-        isEditing = false
-        onSave(text)
+        if onSave(text) {
+            isEditing = false
+        }
     }
 
     private var typeTitle: String {

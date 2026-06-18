@@ -26,9 +26,10 @@ final class GlobalShortcutManager: ObservableObject {
             eventClass: OSType(kEventClassKeyboard),
             eventKind: UInt32(kEventHotKeyPressed)
         )
+        let eventTarget = GetApplicationEventTarget()
         var installedHandler: EventHandlerRef?
         let installStatus = InstallEventHandler(
-            GetEventDispatcherTarget(),
+            eventTarget,
             Self.eventHandler,
             1,
             &eventType,
@@ -50,7 +51,7 @@ final class GlobalShortcutManager: ObservableObject {
             UInt32(shortcut.keyCode),
             Self.carbonModifiers(from: shortcut.modifiers),
             hotKeyID,
-            GetEventDispatcherTarget(),
+            eventTarget,
             0,
             &registeredHotKey
         )

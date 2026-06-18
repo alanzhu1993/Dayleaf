@@ -9,6 +9,7 @@ struct DayleafCoreCheck {
         try checkMarkdownExportUsesConfiguredDirectory()
         try checkExportFileNamerAvoidsOverwrites()
         try checkJSONStoreRoundTrip()
+        try checkShortcutSettingsRoundTrip()
         print("DayleafCoreCheck passed")
     }
 
@@ -181,6 +182,40 @@ struct DayleafCoreCheck {
 
         try expect(loadedDatabase == database, "database should round trip")
         try expect(loadedSettings == settings, "settings should round trip")
+    }
+
+    private static func checkShortcutSettingsRoundTrip() throws {
+        let defaultSettings = DayleafSettings()
+        try expect(
+            defaultSettings.resolvedQuickCaptureShortcut == .defaultQuickCapture,
+            "missing shortcut setting should use default quick capture shortcut"
+        )
+        try expect(
+            defaultSettings.resolvedQuickCaptureShortcut.displayText == "⌃⌥Space",
+            "default shortcut display should be control-option-space"
+        )
+
+        let customShortcut = KeyboardShortcutSpec(
+            keyCode: 45,
+            keyEquivalent: "N",
+            modifiers: [.command, .option]
+        )
+        let customSettings = DayleafSettings(quickCaptureShortcut: customShortcut)
+        let data = try JSONEncoder().encode(customSettings)
+        let decoded = try JSONDecoder().decode(DayleafSettings.self, from: data)
+
+        try expect(
+            decoded.resolvedQuickCaptureShortcut == customShortcut,
+            "custom shortcut should round trip through settings JSON"
+        )
+        try expect(
+            customShortcut.hasRequiredModifier,
+            "shortcut with command or option or control should be valid"
+        )
+        try expect(
+            KeyboardShortcutSpec(keyCode: 0, keyEquivalent: "A", modifiers: [.shift]).hasRequiredModifier == false,
+            "plain shift shortcut should not be accepted"
+        )
     }
 
     private static func expect(_ condition: @autoclosure () -> Bool, _ message: String) throws {

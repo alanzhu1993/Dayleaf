@@ -141,8 +141,10 @@ final class DayleafViewModel: ObservableObject {
             createdAt: startedAt,
             updatedAt: startedAt
         )
-        mutateDatabase { database in
+        guard mutateDatabase({ database in
             database.focusSessions.append(session)
+        }) else {
+            return false
         }
         plannedActivityDraft = ""
         statusMessage = "已开始专注。"
@@ -158,9 +160,11 @@ final class DayleafViewModel: ObservableObject {
         }
 
         let pausedAt = Date()
-        mutateDatabase { database in
+        guard mutateDatabase({ database in
             database.focusSessions[index].pauseIntervals.append(PauseInterval(startedAt: pausedAt))
             database.focusSessions[index].refreshActiveDuration(now: pausedAt)
+        }) else {
+            return
         }
         statusMessage = "专注已暂停。"
     }
@@ -175,9 +179,11 @@ final class DayleafViewModel: ObservableObject {
         }
 
         let resumedAt = Date()
-        mutateDatabase { database in
+        guard mutateDatabase({ database in
             database.focusSessions[index].pauseIntervals[lastPauseIndex].endedAt = resumedAt
             database.focusSessions[index].refreshActiveDuration(now: resumedAt)
+        }) else {
+            return
         }
         statusMessage = "专注已继续。"
     }
@@ -195,7 +201,7 @@ final class DayleafViewModel: ObservableObject {
         }
 
         let endedAt = Date()
-        mutateDatabase { database in
+        guard mutateDatabase({ database in
             if let lastPauseIndex = database.focusSessions[index].pauseIntervals.indices.last,
                database.focusSessions[index].pauseIntervals[lastPauseIndex].endedAt == nil {
                 database.focusSessions[index].pauseIntervals[lastPauseIndex].endedAt = endedAt
@@ -203,6 +209,8 @@ final class DayleafViewModel: ObservableObject {
             database.focusSessions[index].actualActivity = actualActivity
             database.focusSessions[index].endedAt = endedAt
             database.focusSessions[index].refreshActiveDuration(now: endedAt)
+        }) else {
+            return false
         }
         finishActivityDraft = ""
         statusMessage = "专注已保存。"
@@ -246,44 +254,52 @@ final class DayleafViewModel: ObservableObject {
             return false
         }
 
+        let saved: Bool
         switch entry {
         case .focusSession(let session):
             guard session.endedAt != nil else {
                 statusMessage = "进行中的专注不能编辑。"
                 return false
             }
-            mutateDatabase { database in
+            saved = mutateDatabase { database in
                 if let index = database.focusSessions.firstIndex(where: { $0.id == session.id }) {
                     database.focusSessions[index].actualActivity = text
                     database.focusSessions[index].updatedAt = Date()
                 }
             }
         case .quickNote(let note):
-            mutateDatabase { database in
+            saved = mutateDatabase { database in
                 if let index = database.quickNotes.firstIndex(where: { $0.id == note.id }) {
                     database.quickNotes[index].content = text
                     database.quickNotes[index].updatedAt = Date()
                 }
             }
         }
+        guard saved else {
+            return false
+        }
         statusMessage = "已更新一条记录。"
         return true
     }
 
     func deleteEntry(_ entry: DayEntry) {
+        let saved: Bool
         switch entry {
         case .focusSession(let session):
             guard session.endedAt != nil else {
                 statusMessage = "进行中的专注不能删除。"
                 return
             }
-            mutateDatabase { database in
+            saved = mutateDatabase { database in
                 database.focusSessions.removeAll { $0.id == session.id }
             }
         case .quickNote(let note):
-            mutateDatabase { database in
+            saved = mutateDatabase { database in
                 database.quickNotes.removeAll { $0.id == note.id }
             }
+        }
+        guard saved else {
+            return
         }
         statusMessage = "已删除一条记录。"
     }
@@ -392,9 +408,11 @@ final class DayleafViewModel: ObservableObject {
             do {
                 let content = try await aiClient.generateJournal(settings: settings, apiKey: apiKey, prompt: prompt)
                 await MainActor.run {
-                    self.upsertGeneratedJournal(content: content, sourceEntryIDs: prompt.sourceEntryIDs)
+                    let savedJournalID = self.upsertGeneratedJournal(content: content, sourceEntryIDs: prompt.sourceEntryIDs)
                     self.isGeneratingJournal = false
-                    self.statusMessage = "今日一笺已生成。"
+                    if savedJournalID != nil {
+                        self.statusMessage = "今日一笺已生成。"
+                    }
                 }
             } catch {
                 await MainActor.run {
@@ -427,13 +445,15 @@ final class DayleafViewModel: ObservableObject {
             return false
         }
 
-        mutateDatabase { database in
+        guard mutateDatabase({ database in
             if let index = database.journals.firstIndex(where: { $0.id == journal.id }) {
                 database.journals[index].title = trimmedTitle
                 database.journals[index].content = trimmedContent
                 database.journals[index].editedByUser = true
                 database.journals[index].updatedAt = Date()
             }
+        }) else {
+            return false
         }
         selectedJournalID = journal.id
         statusMessage = "日记已保存。"
@@ -441,10 +461,14 @@ final class DayleafViewModel: ObservableObject {
     }
 
     func deleteJournal(_ journal: DailyJournal) {
-        mutateDatabase { database in
+        var nextSelectedJournalID: UUID?
+        guard mutateDatabase({ database in
             database.journals.removeAll { $0.id == journal.id }
+            nextSelectedJournalID = database.journalsNewestFirst.first?.id
+        }) else {
+            return
         }
-        selectedJournalID = journalsNewestFirst.first?.id
+        selectedJournalID = nextSelectedJournalID
         statusMessage = "日记已删除。"
     }
 
@@ -553,13 +577,14 @@ final class DayleafViewModel: ObservableObject {
         return true
     }
 
-    private func upsertGeneratedJournal(content: String, sourceEntryIDs: [UUID]) {
+    private func upsertGeneratedJournal(content: String, sourceEntryIDs: [UUID]) -> UUID? {
         let generatedAt = Date()
         let day = Calendar.current.startOfDay(for: now)
         let title = "\(Self.dateTitle(day)) 今日一笺"
         let modelName = settings.aiModel ?? ""
 
-        mutateDatabase { database in
+        var upsertedJournalID: UUID?
+        guard mutateDatabase({ database in
             if let index = database.journals.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: day) }) {
                 database.journals[index].title = title
                 database.journals[index].content = content
@@ -568,7 +593,7 @@ final class DayleafViewModel: ObservableObject {
                 database.journals[index].updatedAt = generatedAt
                 database.journals[index].editedByUser = false
                 database.journals[index].modelName = modelName
-                selectedJournalID = database.journals[index].id
+                upsertedJournalID = database.journals[index].id
             } else {
                 let journal = DailyJournal(
                     date: day,
@@ -579,9 +604,13 @@ final class DayleafViewModel: ObservableObject {
                     modelName: modelName
                 )
                 database.journals.append(journal)
-                selectedJournalID = journal.id
+                upsertedJournalID = journal.id
             }
+        }) else {
+            return nil
         }
+        selectedJournalID = upsertedJournalID
+        return upsertedJournalID
     }
 
     private func databaseWithRefreshedActiveDuration() -> DayleafDatabase {

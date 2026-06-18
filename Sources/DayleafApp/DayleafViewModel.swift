@@ -227,9 +227,13 @@ final class DayleafViewModel: ObservableObject {
         }
 
         let occurredAt = Date()
-        mutateDatabase { database in
+        let saved = mutateDatabase { database in
             database.quickNotes.append(QuickNote(content: content, occurredAt: occurredAt))
         }
+        guard saved else {
+            return false
+        }
+
         statusMessage = "碎碎念已记录。"
         return true
     }
@@ -519,11 +523,14 @@ final class DayleafViewModel: ObservableObject {
         }
     }
 
-    private func saveDatabase() {
+    @discardableResult
+    private func saveDatabase(_ databaseToSave: DayleafDatabase? = nil) -> Bool {
         do {
-            try store.saveDatabase(database)
+            try store.saveDatabase(databaseToSave ?? database)
+            return true
         } catch {
             statusMessage = "保存失败：\(error.localizedDescription)"
+            return false
         }
     }
 
@@ -535,11 +542,15 @@ final class DayleafViewModel: ObservableObject {
         }
     }
 
-    private func mutateDatabase(_ mutation: (inout DayleafDatabase) -> Void) {
+    @discardableResult
+    private func mutateDatabase(_ mutation: (inout DayleafDatabase) -> Void) -> Bool {
         var nextDatabase = database
         mutation(&nextDatabase)
+        guard saveDatabase(nextDatabase) else {
+            return false
+        }
         database = nextDatabase
-        saveDatabase()
+        return true
     }
 
     private func upsertGeneratedJournal(content: String, sourceEntryIDs: [UUID]) {

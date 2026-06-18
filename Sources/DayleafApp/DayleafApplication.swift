@@ -2,17 +2,17 @@ import SwiftUI
 
 @main
 struct DayleafApplication: App {
-    @StateObject private var viewModel = DayleafViewModel()
+    @StateObject private var coordinator = DayleafAppCoordinator()
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarRootView()
-                .environmentObject(viewModel)
+            MenuBarRootView(onShortcutChanged: coordinator.registerQuickCaptureShortcut)
+                .environmentObject(coordinator.viewModel)
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: viewModel.menuSystemImage)
-                if viewModel.menuTitle.isEmpty == false {
-                    Text(viewModel.menuTitle)
+                Image(systemName: coordinator.viewModel.menuSystemImage)
+                if coordinator.viewModel.menuTitle.isEmpty == false {
+                    Text(coordinator.viewModel.menuTitle)
                         .monospacedDigit()
                 }
             }
@@ -20,8 +20,8 @@ struct DayleafApplication: App {
         .menuBarExtraStyle(.window)
 
         Settings {
-            SettingsView()
-                .environmentObject(viewModel)
+            SettingsView(onShortcutChanged: coordinator.registerQuickCaptureShortcut)
+                .environmentObject(coordinator.viewModel)
         }
     }
 }

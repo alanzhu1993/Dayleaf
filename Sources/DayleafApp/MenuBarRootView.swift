@@ -3,6 +3,8 @@ import DayleafCore
 import SwiftUI
 
 struct MenuBarRootView: View {
+    let onShortcutChanged: () -> Void
+
     @EnvironmentObject private var viewModel: DayleafViewModel
     @FocusState private var focusedField: FocusedField?
 
@@ -299,7 +301,7 @@ struct MenuBarRootView: View {
                 .buttonStyle(FooterButtonStyle())
                 .help("保存目录、主题等设置")
                 .popover(isPresented: $showingSettings, arrowEdge: .bottom) {
-                    SettingsPanel(onStatusMessage: presentToast)
+                    SettingsPanel(onStatusMessage: presentToast, onShortcutChanged: onShortcutChanged)
                         .environmentObject(viewModel)
                 }
 
@@ -377,6 +379,7 @@ private struct SettingsPanel: View {
     @EnvironmentObject private var viewModel: DayleafViewModel
     @AppStorage(AppThemeStore.key) private var themeRaw = AppThemeStore.default
     let onStatusMessage: (String?) -> Void
+    let onShortcutChanged: () -> Void
 
     private var theme: AppTheme { AppTheme(rawValue: themeRaw) ?? .dark }
 
@@ -397,6 +400,30 @@ private struct SettingsPanel: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+            }
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("快捷键")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Palette.textSecondary)
+                ShortcutRecorder(shortcut: viewModel.quickCaptureShortcut) { shortcut in
+                    _ = viewModel.saveQuickCaptureShortcut(shortcut)
+                    onShortcutChanged()
+                    onStatusMessage(viewModel.statusMessage)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let message = viewModel.quickCaptureShortcutRegistrationMessage {
+                    Text(message)
+                        .font(.caption2)
+                        .foregroundStyle(Palette.danger)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("用于弹出快速记录浮窗。")
+                        .font(.caption2)
+                        .foregroundStyle(Palette.textTertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             VStack(alignment: .leading, spacing: 7) {

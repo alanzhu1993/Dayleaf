@@ -328,20 +328,30 @@ final class DayleafViewModel: ObservableObject {
     }
 
     func saveAISettings() {
-        settings.aiBaseURL = aiBaseURLDraft.nilIfBlank
-        settings.aiModel = aiModelDraft.nilIfBlank
-        saveSettings()
+        var nextSettings = settings
+        nextSettings.aiBaseURL = aiBaseURLDraft.nilIfBlank
+        nextSettings.aiModel = aiModelDraft.nilIfBlank
+        guard saveSettings(nextSettings) else {
+            return
+        }
         statusMessage = "AI 设置已保存。"
     }
 
-    func saveQuickCaptureShortcut(_ shortcut: KeyboardShortcutSpec) {
+    @discardableResult
+    func saveQuickCaptureShortcut(_ shortcut: KeyboardShortcutSpec) -> Bool {
         guard shortcut.hasRequiredModifier else {
             statusMessage = "快捷键需要包含 Command、Option 或 Control。"
-            return
+            return false
         }
-        settings.quickCaptureShortcut = shortcut
-        saveSettings()
+
+        var nextSettings = settings
+        nextSettings.quickCaptureShortcut = shortcut
+        guard saveSettings(nextSettings) else {
+            return false
+        }
+
         statusMessage = "快速记录快捷键已更新。"
+        return true
     }
 
     func setQuickCaptureShortcutRegistrationMessage(_ message: String?) {
@@ -506,8 +516,11 @@ final class DayleafViewModel: ObservableObject {
         panel.makeKeyAndOrderFront(nil)
 
         if panel.runModal() == .OK, let url = panel.url {
-            settings.exportDirectoryPath = url.path
-            saveSettings()
+            var nextSettings = settings
+            nextSettings.exportDirectoryPath = url.path
+            guard saveSettings(nextSettings) else {
+                return
+            }
             statusMessage = "保存目录已更新。"
         } else {
             statusMessage = "未修改保存目录。"
@@ -558,11 +571,15 @@ final class DayleafViewModel: ObservableObject {
         }
     }
 
-    private func saveSettings() {
+    @discardableResult
+    private func saveSettings(_ settingsToSave: DayleafSettings) -> Bool {
         do {
-            try store.saveSettings(settings)
+            try store.saveSettings(settingsToSave)
+            settings = settingsToSave
+            return true
         } catch {
             statusMessage = "保存设置失败：\(error.localizedDescription)"
+            return false
         }
     }
 

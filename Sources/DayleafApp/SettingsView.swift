@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let onShortcutChanged: () -> Void
+
     @EnvironmentObject private var viewModel: DayleafViewModel
 
     var body: some View {
@@ -40,8 +42,23 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section("快捷键") {
-                Text("Swift Package 原型暂不注册全局快捷键。正式 .app 打包阶段再加入可配置快捷键。")
+            Section {
+                LabeledContent("快速记录快捷键") {
+                    ShortcutRecorder(shortcut: viewModel.quickCaptureShortcut) { shortcut in
+                        _ = viewModel.saveQuickCaptureShortcut(shortcut)
+                        onShortcutChanged()
+                    }
+                }
+
+                if let message = viewModel.quickCaptureShortcutRegistrationMessage {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            } header: {
+                Text("快捷键")
+            } footer: {
+                Text("按下快捷键后，会弹出只用于快速记录的小窗口。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

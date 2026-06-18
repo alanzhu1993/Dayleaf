@@ -8,7 +8,9 @@ import SwiftUI
 struct QuickNoteEditor: NSViewRepresentable {
     @Binding var text: String
     var placeholder: String
+    var focusTrigger: Int = 0
     var onSubmit: () -> Void
+    var onCancel: () -> Void = {}
     var onFocusChange: (Bool) -> Void = { _ in }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -42,19 +44,32 @@ struct QuickNoteEditor: NSViewRepresentable {
         context.coordinator.parent = self
         guard let textView = scrollView.documentView as? PlaceholderTextView else { return }
         textView.placeholderString = placeholder
+        func applyFocusIfNeeded() {
+            if context.coordinator.lastFocusTrigger != focusTrigger {
+                context.coordinator.lastFocusTrigger = focusTrigger
+                DispatchQueue.main.async {
+                    scrollView.window?.makeFirstResponder(textView)
+                }
+            }
+        }
         // 正在用输入法组字（拼音预编辑）时，绝不回写 string，
         // 否则每秒定时器触发的重绘会抹掉未上屏的内容，打断/取消输入。
-        if textView.hasMarkedText() { return }
+        if textView.hasMarkedText() {
+            applyFocusIfNeeded()
+            return
+        }
         if textView.string != text {
             textView.string = text
             textView.needsDisplay = true
         }
+        applyFocusIfNeeded()
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
     final class Coordinator: NSObject, NSTextViewDelegate {
         var parent: QuickNoteEditor
+        var lastFocusTrigger = 0
 
         init(_ parent: QuickNoteEditor) { self.parent = parent }
 
@@ -78,6 +93,10 @@ struct QuickNoteEditor: NSViewRepresentable {
                     return false   // Shift+回车：交给系统在光标处插入换行
                 }
                 parent.onSubmit()  // 回车：保存
+                return true
+            }
+            if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+                parent.onCancel()
                 return true
             }
             return false

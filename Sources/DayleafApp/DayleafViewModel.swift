@@ -15,6 +15,7 @@ final class DayleafViewModel: ObservableObject {
     @Published var aiAPIKeyDraft = ""
     @Published private(set) var hasStoredAPIKey = false
     @Published private(set) var isGeneratingJournal = false
+    @Published private(set) var quickCaptureShortcutRegistrationMessage: String?
     @Published var selectedJournalID: UUID?
     @Published var statusMessage: String?
     @Published var now = Date()
@@ -86,6 +87,14 @@ final class DayleafViewModel: ObservableObject {
 
     var exportDirectoryDisplay: String {
         settings.resolvedExportDirectoryURL().path
+    }
+
+    var quickCaptureShortcut: KeyboardShortcutSpec {
+        settings.resolvedQuickCaptureShortcut
+    }
+
+    var quickCaptureShortcutDisplay: String {
+        quickCaptureShortcut.displayText
     }
 
     var journalsNewestFirst: [DailyJournal] {
@@ -202,7 +211,16 @@ final class DayleafViewModel: ObservableObject {
 
     @discardableResult
     func addQuickNote() -> Bool {
-        let content = quickNoteDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        let saved = addQuickNote(content: quickNoteDraft)
+        if saved {
+            quickNoteDraft = ""
+        }
+        return saved
+    }
+
+    @discardableResult
+    func addQuickNote(content rawContent: String) -> Bool {
+        let content = rawContent.trimmingCharacters(in: .whitespacesAndNewlines)
         guard content.isEmpty == false else {
             statusMessage = "先写一点内容。"
             return false
@@ -212,7 +230,6 @@ final class DayleafViewModel: ObservableObject {
         mutateDatabase { database in
             database.quickNotes.append(QuickNote(content: content, occurredAt: occurredAt))
         }
-        quickNoteDraft = ""
         statusMessage = "碎碎念已记录。"
         return true
     }
@@ -295,6 +312,20 @@ final class DayleafViewModel: ObservableObject {
         settings.aiModel = aiModelDraft.nilIfBlank
         saveSettings()
         statusMessage = "AI 设置已保存。"
+    }
+
+    func saveQuickCaptureShortcut(_ shortcut: KeyboardShortcutSpec) {
+        guard shortcut.hasRequiredModifier else {
+            statusMessage = "快捷键需要包含 Command、Option 或 Control。"
+            return
+        }
+        settings.quickCaptureShortcut = shortcut
+        saveSettings()
+        statusMessage = "快速记录快捷键已更新。"
+    }
+
+    func setQuickCaptureShortcutRegistrationMessage(_ message: String?) {
+        quickCaptureShortcutRegistrationMessage = message
     }
 
     func saveAIAPIKey() {

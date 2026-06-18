@@ -110,6 +110,7 @@ struct JournalWindowView: View {
 
                 JournalBodyEditor(
                     text: $contentDraft,
+                    journalID: journal.id,
                     onFocusChange: { contentEditorFocused = $0 }
                 )
                     .padding(4)

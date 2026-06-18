@@ -5,6 +5,7 @@ import SwiftUI
 /// 这里直接使用 NSTextView，明确开启可编辑、可选择和撤销。
 struct JournalBodyEditor: NSViewRepresentable {
     @Binding var text: String
+    var journalID: UUID?
     var onFocusChange: (Bool) -> Void = { _ in }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -50,12 +51,15 @@ struct JournalBodyEditor: NSViewRepresentable {
         guard let textView = scrollView.documentView as? NSTextView else { return }
         textView.isEditable = true
         textView.isSelectable = true
-        if textView.hasMarkedText() { return }
-        if textView.window?.firstResponder === textView { return }
+        let journalChanged = context.coordinator.lastJournalID != journalID
+        context.coordinator.lastJournalID = journalID
+        if textView.hasMarkedText(), journalChanged == false { return }
+        if textView.window?.firstResponder === textView, journalChanged == false { return }
         if textView.string != text {
             let selectedRange = textView.selectedRange()
             textView.string = text
-            textView.setSelectedRange(NSRange(location: min(selectedRange.location, textView.string.count), length: 0))
+            let location = journalChanged ? 0 : min(selectedRange.location, textView.string.count)
+            textView.setSelectedRange(NSRange(location: location, length: 0))
         }
     }
 
@@ -65,9 +69,11 @@ struct JournalBodyEditor: NSViewRepresentable {
 
     final class Coordinator: NSObject, NSTextViewDelegate {
         var parent: JournalBodyEditor
+        var lastJournalID: UUID?
 
         init(_ parent: JournalBodyEditor) {
             self.parent = parent
+            self.lastJournalID = parent.journalID
         }
 
         func textDidChange(_ notification: Notification) {
